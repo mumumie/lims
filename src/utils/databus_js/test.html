@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>databus web test</title>
+  <script src="./dist/pako.min.js"></script>
+  <script src="./dist/bytebuffer.min.js"></script>
+  <script src="./protobuf/bundle.js"></script>
+  <script src="./jbuscore.js"></script>
+  <script src="./index.js"></script>
+</head>
+
+<body>
+  <button id="open" type="button">open</button>
+  <button id="hello" type="button">hello</button>
+
+  <script>
+    'use strict';
+
+var openBtn = document.getElementById('open');
+var helloBtn = document.getElementById('hello');
+
+jbus.setHeartBeatIntervalSecond(5);
+jbus.setPublish(function (data) {
+  if(data instanceof proto.Test.Hello) {
+    appendLog(data.toString());
+  }
+});
+
+openBtn.onclick = function () {
+
+  var topicList = [];
+  topicList.push("Test.Hello");
+  jbus.open('ws://139.224.234.131:2222',topicList).then(function (json) {
+    appendLog('open ' + json);
+  }).catch(function (err) {
+    appendLog(JSON.stringify(err));
+  });
+};
+
+helloBtn.onclick = function () {
+  var msg=new proto.Test.Hello();
+  msg.setI(10);
+  msg.setStr("hello");
+
+  appendLog(msg.toLocaleString());
+  jbus.post2('Test.Hello', msg).then(function (json) {
+    appendLog(json);
+  }).catch(function (err) {
+    appendLog(err.toLocaleString());
+  });
+};
+
+function appendLog(msg) {
+  if (typeof msg !== 'string') {
+    msg = JSON.stringify(msg);
+  }
+
+  var log = document.getElementById("debuglog");
+  if (!log) {
+    log = document.createElement("div");
+    log.id = "debuglog";
+    document.body.appendChild(log);
+  }
+  var pre = document.createElement("prev");
+  var text = document.createTextNode(msg);
+  var newLine = document.createElement("br");
+  pre.appendChild(text);
+  pre.appendChild(newLine);
+  log.appendChild(pre);
+}
+  </script>
+</body>
+
+</html>

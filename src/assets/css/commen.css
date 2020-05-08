@@ -1,0 +1,22 @@
+html{
+  height:100%;
+}
+body{
+  height:100%;
+  margin:0;
+}
+p{margin:0}
+
+
+/*froala 样式问题*/
+.fr-wrapper > div[style*="z-index: 9999"] {
+  position: absolute !important;
+  top: -10000px;
+  opacity: 0;
+}
+.fr-element.fr-view {
+  top: 0;
+}
+.fr-placeholder{
+  margin-top: 0 !important;
+}
