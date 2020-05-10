@@ -228,6 +228,9 @@
           userRoles: [
             { required: true, message: '请输入用户角色', trigger: 'blur' }
           ],
+          deptName: [
+            { required: true, message: '请输入部门', trigger: 'blur' }
+          ]
         },
         // 新增编辑界面数据
         dataForm: {

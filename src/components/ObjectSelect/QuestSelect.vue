@@ -8,6 +8,7 @@
         :questBankId="questBankId"
         :pageInfo="null"
         :call="1"
+        @closeChapterType="closeChapterType"
         @showQuest="showQuest">
       </QuestFilter>
     </div>
@@ -16,8 +17,9 @@
       :data="tableData"
       tooltip-effect="dark"
       size="mini"
-      height="400"
+      :height="windowHeight"
       style="width: 100%"
+      v-loading="tableLoading"
       @selection-change="handleSelectionChange">
       <el-table-column
         type="selection"
@@ -122,11 +124,19 @@
         formData:{
           chapter:[],
           type:[],
-          difficulty:'',
+          difficulty:''
         },
+        windowHeight: 400,
+        tableLoading: false
       }
     },
+    created() {
+      this.windowHeight = document.body.clientHeight - 360;
+    },
     methods:{
+      closeChapterType(val) {
+        this.tableLoading = val
+      },
       toggleSelection(rows) {
         console.log(rows);
         if (rows) {
@@ -179,6 +189,7 @@
       },
       showQuest:function(res){
         this.tableData=res.bean;
+        this.tableLoading = false
       },
       addTeacherId:function(){
         if (this.multipleSelection.length === 0) {
@@ -192,9 +203,6 @@
         this.previewData = Object.assign({},row)
         this.detailVisible = true;
       }
-    },
-    created(){
-
     }
   }
 </script>

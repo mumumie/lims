@@ -6,13 +6,11 @@
                    :key="item.id"></el-option>
       </el-select>
     </el-form-item>
-
     <el-form-item label="状态">
       <el-checkbox-group v-model="statusValue">
         <el-checkbox v-for="item in statusData" :label="item.value" :key="item.value">{{item.name}}</el-checkbox>
       </el-checkbox-group>
     </el-form-item>
-
     <el-form-item label="难度">
       <el-checkbox-group v-model="difficultyValue">
         <el-checkbox v-for="item in difficultyData" :label="item.value" :key="item.value">{{item.name}}</el-checkbox>
@@ -45,7 +43,6 @@
         <el-table
           ref="chapterTable"
           :data="chapterData"
-          @row-click="toggleSelection"
           @selection-change="chapterChange">
           <el-table-column
             type="selection">
@@ -58,7 +55,6 @@
             prop="value"
             label="题目数量">
           </el-table-column>
-
         </el-table>
       </el-form-item>
       <el-form-item label="题型">
@@ -84,7 +80,7 @@
             label="随机抽题量">
             <template slot-scope="scope">
               <el-input v-model.number="scope.row.typeCount" :disabled="scope.row.typeCount==0"
-              type="number" min="1"></el-input>
+              type="number" min="1" max="30"></el-input>
             </template>
           </el-table-column>
         </el-table>
@@ -93,30 +89,21 @@
         <el-button type="primary" @click="onSubmit">查询</el-button>
       </el-form-item>
     </el-dialog>
-
   </el-form>
-
 </template>
-
-
 <script>
   import {aggregate, post, queryBean} from "../../http/base";
   import {mapTree} from "../../utils";
-
   export default {
     props:['questBankData','topicData','questBankId', 'call', 'pageInfo'],
     data() {
       return {
         chapterTypeVisible: false,
-
-
         timeValue: [],
         chapterValue: [],
         questTypeValue: [],
         statusValue: [1],
-
         difficultyValue: [1,2,3,4,5],
-
         questBankData: [],
         chapterData: [],
         questTypeData: [],
@@ -185,33 +172,37 @@
         }else{
           condition["type$in"] = this.questTypeValue;
         }
-
         let typeRandom = {};
         this.questTypeData.forEach(v=>{
           typeRandom[v['name']] = v['typeCount']
         })
+        this.$emit('closeChapterType', true)
+        this.chapterTypeVisible = false;
         post("queryRandomQuest", {
           condition: condition,
           typeRandom: typeRandom
         }).then(res => {
           this.$emit('showQuest',res);
-          this.chapterTypeVisible = false;
+        }).catch(() =>{
+          this.$emit('closeChapterType', false)
         })
 
       },
       chapterSelect(){
         this.chapterTypeVisible = true;
+        delete this.baseCondition["chapter$in"]
         this.refreshChapter().then(res =>{
-          this.toggleSelection();
+          this.toggleSelection()
         })
-
+        setTimeout(() => {
+          this.$refs.typeTable.toggleAllSelection()
+        },1000)
       },
       toggleSelection() {
-        this.chapterData.forEach(row => {
-          this.$nextTick(() =>{
-            this.$refs.chapterTable.toggleRowSelection(row,true);
-          })
-        });
+        this.$nextTick(() =>{
+          this.$refs.chapterTable.toggleAllSelection();
+        })
+
       },
       chapterChange: function (val) {
         let list = [];
@@ -225,7 +216,11 @@
           mapTree(res.bean, {"name": "_id", "value": "count"})
           this.questTypeData = res.bean;
           this.questTypeData.forEach((v,i)=>{
-            this.$set(this.questTypeData[i],'typeCount',v.value)
+            if (v.value > 30) {
+              this.$set(this.questTypeData[i], 'typeCount', 30)
+            } else {
+              this.$set(this.questTypeData[i], 'typeCount', v.value)
+            }
             // v['typeCount'] = v.value
           })
         });
@@ -240,7 +235,7 @@
 
         this.questTypeData.forEach(v=>{
           if(this.questTypeValue.includes(v.name)){
-            if (v.typeCount==0) v.typeCount = v.value
+            if (v.typeCount==0) v.typeCount = v.value > 30 ? 30 : v.value
           }else {
             v.typeCount = 0
           }

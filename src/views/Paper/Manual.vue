@@ -31,7 +31,6 @@
       </div>
       <el-form-item label="试题列表">
         <el-button icon="el-icon-circle-plus-outline" @click="addQuestId">题目选择器</el-button>
-
         <el-table
           :data="questList"
           size="mini"
@@ -85,10 +84,8 @@
             <template slot-scope="scope">
               <el-button type="text" @click="handleDeleting(scope.$index, scope.row , questList)">删除</el-button>
               <el-button type="text" @click="handlePreview(scope.$index, scope.row)">预览</el-button>
-              <el-button type="text" icon="el-icon-top"
-                         @click="handleAscending(scope.$index, scope.row , questList)"></el-button>
-              <el-button type="text" icon="el-icon-bottom"
-                         @click="handleDescending(scope.$index, scope.row , questList)"></el-button>
+              <el-button type="text" icon="el-icon-top" @click="handleAscending(scope.$index, scope.row , questList)"></el-button>
+              <el-button type="text" icon="el-icon-bottom" @click="handleDescending(scope.$index, scope.row , questList)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -222,7 +219,7 @@
       :visible.sync="questVisible"
       append-to-body :with-header="false"
       direction="rtl" :size="'50%'">
-      <div style="margin-left:10px" >
+      <div style="margin-left:10px">
         <QuestSelect
           ref="questId"
           :questBankData = "questBankData"
@@ -233,8 +230,6 @@
           @changeQuest="changeQuest">
         </QuestSelect>
       </div>
-
-
     </el-drawer>
   </div>
 </template>
@@ -242,7 +237,6 @@
 <script>
   import {addBean, queryBean, addBatchBean} from "@/http/base";
   import QuestSelect from "@/components/ObjectSelect/QuestSelect";
-
   export default {
     name: "Manual",
     components: {
