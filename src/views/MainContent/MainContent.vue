@@ -28,7 +28,9 @@
     <div class="main-content">
       <keep-alive>
         <transition name="fade" mode="out-in">
+          <keep-alive include="Manual,Quest">
             <router-view></router-view>
+          </keep-alive>
         </transition>
       </keep-alive>
     </div>

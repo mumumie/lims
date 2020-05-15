@@ -115,7 +115,7 @@
   import FroalaInlineEditor from "@/components/wangEditor/froalaInlineEditor";
   import {getBean, queryBean, updateBean} from "@/http/base";
   export default {
-    name: "Quest",
+    name: "EditQuest",
     components: {
       FroalaEditor,
       FroalaInlineEditor,
@@ -368,10 +368,12 @@
             if(this.isCustomKnowledge){
               params.topic = params.knowledge;
               if(params.topic){
-                let doc = {
-                  topic:[params.topic,...this.topicData]
+                if (!this.topicData.includes(params.topic)) {
+                  let doc = {
+                    topic:[params.topic,...this.topicData]
+                  }
+                  updateBean('QuestBank',params.questBankId,doc)
                 }
-                updateBean('QuestBank',params.questBankId,doc)
               }
             }
             if (params.tfAnswer == null) params.tfAnswer = undefined;

@@ -371,10 +371,12 @@
           if(this.isCustomKnowledge){
             params.topic = params.knowledge;
             if(params.topic){
-              let doc = {
-                topic:[params.topic,...this.topicData]
+              if (!this.topicData.includes(params.topic)) {
+                let doc = {
+                  topic:[params.topic,...this.topicData]
+                }
+                updateBean('QuestBank',params.questBankId,doc)
               }
-              updateBean('QuestBank',params.questBankId,doc)
             }
           }
           this.$api.quest.save(params).then((res) => {
