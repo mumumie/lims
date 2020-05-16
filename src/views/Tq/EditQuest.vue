@@ -95,14 +95,18 @@
           <el-input v-model="formData.score" auto-complete="off"  placeholder="请输入分值"></el-input>
         </el-form-item>
         <el-form-item label="知识点" prop="topic">
-          <el-select v-model="formData.topic" placeholder="请选择" v-if="!isCustomKnowledge">
+          <el-select v-model="formData.topic" placeholder="请选择" filterable clearable  v-if="!isCustomKnowledge">
             <el-option :label="item" :value="item" :key="index"
                        v-for="(item,index) in topicData"></el-option>
           </el-select>
           <div style="color:#0C96FF;line-height: 20px;cursor:pointer;" v-if="!isCustomKnowledge" @click="isCustomKnowledge = true"><i class="el-icon-plus"></i>自定义知识点</div>
           <div class="topic-box" v-else>
             <el-input v-model="formData.knowledge" auto-complete="off" ></el-input>
-            <div style="cursor: pointer;width:20px;flex:none;text-align: center;color:#0C96FF;"><i class="el-icon-delete" @click="isCustomKnowledge = false"></i></div>
+            <div style="cursor: pointer;width:20px;flex:none;text-align: center;color:#0C96FF;">
+              <el-tooltip class="item" effect="dark" content="返回" placement="top">
+                <i class="el-icon-back" @click="deleteKnowledge"></i>
+              </el-tooltip>
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -191,10 +195,13 @@
       }
     },
     methods:{
+      deleteKnowledge() {
+        this.isCustomKnowledge = false;
+        this.formData.knowledge = '';
+        this.formData.topic = ''
+      },
       findQuestBank:function(){
-        let condition={
-
-        };
+        let condition={};
         queryBean('QuestBank',condition)
           .then(res =>{
             this.questBankData = res.bean.data;

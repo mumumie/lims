@@ -415,9 +415,10 @@
         })
         let questList = [...this.questList, ...val];
         this.changeScore(questList)
-        if(val.length>0){
-          this.questVisible=false;
-        }
+        this.questVisible=false;
+        // if(val.length>0){
+        //   this.questVisible=false;
+        // }
       },
       changeScore: function (data) {
         let questList = data;

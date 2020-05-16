@@ -60,7 +60,7 @@
       </el-table-column>
     </el-table>
     <div style="margin-top: 20px">
-      <el-button @click="addTeacherId">添加</el-button>
+      <el-button @click="addTeacherId" type="primary" size="mini">添加</el-button>
     </div>
     <!--    详情展示弹框-->
     <el-dialog

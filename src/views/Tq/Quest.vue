@@ -4,11 +4,11 @@
 
     <div class="quest_box_left">
       <tip :value="
-    ['试题创建后，在我的试题中查看，可进行提交审核']"/>
-      <div class="quest_title">
+    ['试题创建后，在我的试题中查看，需再进行提交审核']"/>
+      <!--<div class="quest_title">
         <p class="quest_title_caption">单题建设</p>
         <p>在库题中创建试题</p>
-      </div>
+      </div>-->
       <FroalaEditor ids="content" placeholder="请输入题干内容..." ref="froalaEditor" @on-change="changeContent"></FroalaEditor>
       <div class="option_box" v-if="selectType === 1">
         <div class="option_select" :class="{active:item.isSelect}" v-for="(item,index) in optionData" :key="index">
@@ -71,7 +71,7 @@
         <FroalaEditor ids="remark" placeholder="请输入解析内容..." ref="remark" @on-change="changeContent"></FroalaEditor>
       </div>
       <div class="submit" style="text-align: right;margin-bottom:20px;" @click="submitQuestion">
-        <el-button type="primary" size="small">提交</el-button>
+        <el-button type="primary" size="small">创建</el-button>
       </div>
     </div>
     <div class="quest_box_right">
@@ -94,8 +94,7 @@
         </el-form-item>
         <el-form-item label="难易度" prop="difficulty">
           <el-select v-model="formData.difficulty" placeholder="请选择">
-            <el-option :label="item.name" :value="item.value" :key="item.value"
-                       v-for="item in difficultyData"></el-option>
+            <el-option :label="item.name" :value="item.value" :key="item.value" v-for="item in difficultyData"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="分值" prop="score">
@@ -103,14 +102,18 @@
                     placeholder="请输入分值"></el-input>
         </el-form-item>
         <el-form-item label="知识点" prop="topic" >
-          <el-select v-model="formData.topic" placeholder="请选择" v-if="!isCustomKnowledge">
+          <el-select v-model="formData.topic" placeholder="请选择" filterable clearable v-if="!isCustomKnowledge">
             <el-option :label="item" :value="item" :key="item"
                        v-for="item in topicData"></el-option>
           </el-select>
           <div style="color:#0C96FF;line-height: 20px;cursor:pointer;" v-if="!isCustomKnowledge" @click="isCustomKnowledge = true"><i class="el-icon-plus"></i>自定义知识点</div>
           <div class="topic-box" v-else>
             <el-input v-model="formData.knowledge" auto-complete="off" ></el-input>
-            <div style="cursor: pointer;width:20px;flex:none;text-align: center;color:#0C96FF;"><i class="el-icon-delete" @click="isCustomKnowledge = false"></i></div>
+            <div style="cursor: pointer;width:20px;flex:none;text-align: center;color:#0C96FF;">
+              <el-tooltip class="item" effect="dark" content="返回" placement="top">
+                <i class="el-icon-back" @click="deleteKnowledge"></i>
+              </el-tooltip>
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -197,6 +200,11 @@
       }
     },
     methods: {
+      deleteKnowledge() {
+        this.isCustomKnowledge = false;
+        this.formData.knowledge = '';
+        this.formData.topic = '';
+      },
       findQuestBank: function () {
         let condition = {};
         queryBean('QuestBank', condition)

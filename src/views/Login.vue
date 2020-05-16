@@ -53,10 +53,8 @@ export default {
     return {
       loading: false,
       loginForm: {
-        account: 'root',
-        passwd: '111111',
-        captcha:'',
-        src: ''
+        account: '',
+        passwd: ''
       },
       fieldRules: {
         account: [
@@ -86,9 +84,18 @@ export default {
   methods: {
     login() {
       this.loading = true;
-      let userInfo = {account:this.loginForm.account, passwd:this.loginForm.passwd, captcha:this.loginForm.captcha}
+      let userInfo = {account:this.loginForm.account, passwd:this.loginForm.passwd}
       this.$api.login.login(userInfo).then((res) => {
         if(res.retCode === 0){
+          if(this.accountChecked && this.passwdChecked){
+            localStorage.setItem('user', JSON.stringify(userInfo))
+          }else if(this.accountChecked){
+            localStorage.setItem('user', JSON.stringify({account:this.loginForm.account, passwd:''}))
+          }else if(this.passwdChecked){
+            localStorage.setItem('user', JSON.stringify({account:'', passwd:this.loginForm.passwd}))
+          }else{
+            localStorage.removeItem('user')
+          }
           Cookies.set('token', res.token); // 放置token到Cookie 新本地
           sessionStorage.setItem('user', userInfo.account); // 保存用户到本地会话
           sessionStorage.setItem('userid', res.userid);
@@ -135,6 +142,16 @@ export default {
   mounted() {
     // this.refreshCaptcha()
     this.logout();
+    if(localStorage.getItem('user')){
+      const user = JSON.parse(localStorage.getItem('user'))
+      if (user.account) {
+        this.accountChecked = true;
+      }
+      if (user.passwd) {
+        this.passwdChecked = true;
+      }
+      this.loginForm = Object.assign(user)
+    }
   },
   computed:{
     ...mapState({

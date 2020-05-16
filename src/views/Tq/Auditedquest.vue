@@ -368,6 +368,13 @@
         this.quitVisible = true;
       },
       quitReason:function(){
+        if (!this.rejectReason) {
+          this.$message({
+            type:"warning",
+            message:'请填写退回原因！！！'
+          })
+          return false
+        }
         let doc = {
           status:-1,
           rejectReason:this.rejectReason,
@@ -379,6 +386,7 @@
               type:"success",
               message:'试题退回成功！！！'
             })
+            this.rejectReason = '';
             this.findPage(null);
             this.quitVisible = false;
           }
