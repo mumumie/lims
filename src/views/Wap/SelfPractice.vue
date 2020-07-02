@@ -149,7 +149,6 @@
             }
             return item;
           })
-          console.log(this.practiceData);
         })
       },
       optionHandle(row,index){

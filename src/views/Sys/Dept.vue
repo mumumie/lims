@@ -1,8 +1,7 @@
 <template>
   <div class="page-container">
     <tip :value="
-    ['包含部门和班级的增删改查，以及指定客户拥有的题库(即非自建题库)',
-     '班级是一种特殊的部门，班级下不能有其他班级或部门',
+    ['创建和管理用户组，对用户组进行新增 编辑及删除。',
      '按类型查询时，将不以树状结构显示']" />
     <!--工具栏-->
     <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
@@ -69,16 +68,16 @@
       @handleDelete="handleDelete">
     </kt-table>
     <!--新增编辑界面-->
-    <el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false" append-to-body>
-      <el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size"
+    <el-dialog :title="operation?'新增':'编辑'" width="600px" :visible.sync="dialogVisible" :close-on-click-modal="false" append-to-body>
+      <el-form :model="dataForm" label-width="120px" :rules="dataFormRules" ref="dataForm" :size="size"
                label-position="right">
         <el-form-item label="ID" prop="id" v-if="false">
           <el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="部门名称" prop="name">
+        <el-form-item label="用户组名称" prop="name">
           <el-input v-model="dataForm.name" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="上级部门" prop="deptName">
+        <el-form-item label="上级用户组" prop="deptName">
           <popup-tree-input
             :data="deptData"
             :props="deptTreeProps"
@@ -93,18 +92,18 @@
 <!--          </el-select>-->
 <!--        </el-form-item>-->
         <el-form-item label="类型">
-          <el-select v-model="dataForm.type" clearable placeholder="请选择部门" >
+          <el-select v-model="dataForm.type" clearable placeholder="请选择用户组" >
             <el-option label="部门" :value="0"></el-option>
             <el-option label="班级" :value="1"></el-option>
 <!--            <el-option label="客户" :value="3"></el-option>-->
           </el-select>
         </el-form-item>
-        <el-form-item label="状态" v-if="!operation">
-          <el-select v-model="dataForm.status" placeholder="请选择" >
-            <el-option label="停用" :value="0"></el-option>
-            <el-option label="启用" :value="1"></el-option>
-          </el-select>
-        </el-form-item>
+<!--        <el-form-item label="状态" v-if="!operation">-->
+<!--          <el-select v-model="dataForm.status" placeholder="请选择" >-->
+<!--            <el-option label="停用" :value="0"></el-option>-->
+<!--            <el-option label="启用" :value="1"></el-option>-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button :size="size" @click.native="dialogVisible = false">{{$t('action.cancel')}}</el-button>
@@ -146,7 +145,7 @@
           </el-table-column>
           <el-table-column prop="passwd" label="密码" >
           </el-table-column>
-          <el-table-column prop="deptmentId" label="部门" >
+          <el-table-column prop="deptmentId" label="用户组" >
           </el-table-column>
           <el-table-column prop="email" label="邮箱" >
           </el-table-column>
@@ -249,7 +248,7 @@
           this.roles = res.bean.data
         })
       },
-// 批量删除
+      // 批量删除
       handleDelete: function (params) {
         this.$confirm('删除后不可恢复，确定删除这一项吗？', '提示', {
           confirmButtonText: '确定',
@@ -314,7 +313,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         let postData = {
 
@@ -347,18 +346,18 @@
           /*{prop:"id", label:"ID", minWidth:50},*/
           {prop:"name", label:"名称", minWidth:120},
           {prop:"type", label:"类型", minWidth:100, formatter: (row) =>{
-              if(row.type === 0) return '部门';
+              if(row.type === 0) return '用户组';
               if(row.type === 1) return '班级';
               if(row.type === 3) return '客户';
               return '未知'
             }},
           {prop:"parentName", label:"上级名称", minWidth:120},
           // {prop:"parentId", label:"上级ID", minWidth:120},
-          {prop:"status", label:"状态", minWidth:100 , formatter:(row) =>{
-              if(row.status === 0) return '停用';
-              if(row.status === 1) return '启用';
-              return '未知'
-            }}
+          // {prop:"status", label:"状态", minWidth:100 , formatter:(row) =>{
+          //     if(row.status === 0) return '停用';
+          //     if(row.status === 1) return '启用';
+          //     return '未知'
+          //   }}
           // {prop:"createBy", label:"创建人", minWidth:120},
           // {prop:"createTime", label:"创建时间", minWidth:120, formatter:this.dateFormat}
           // {prop:"lastUpdateBy", label:"更新人", minWidth:100},
@@ -417,7 +416,7 @@
                 arr['name'] =  item['账号'];
                 arr['nickname'] =  item['昵称'];
                 arr['passwd'] =  String(item['密码']);
-                arr['deptmentId'] =  item['部门id'];
+                arr['deptmentId'] =  item['用户组id'];
                 arr['email'] =  item['邮箱'];
                 arr['phone'] =  item['手机'];
                 return arr;
@@ -468,7 +467,7 @@
             type: 'warning'
           }).then(() => {
             import('@/vendor/Export2Excel').then(excel => {
-              const tHeader = ['账号', '昵称', '部门', '角色', '邮箱', '手机'] // 表头
+              const tHeader = ['账号', '昵称', '用户组', '角色', '邮箱', '手机'] // 表头
               const filterVal = ['name', 'nickname', 'deptName', 'roleNames', 'email', 'phone'] // 需要导出的项目
               const list = data1 ;// 所有列表数据
               const data = this.formatJson(filterVal, list);

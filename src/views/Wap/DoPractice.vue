@@ -80,7 +80,7 @@
         <div class="swiper-pagination"  slot="pagination"></div>
       </swiper>
     </div>
-    <div v-else class="noPractice_box">
+    <div v-else class="noPractice_box" v-loading="practiceLoading">
       <div class="practice_icon">
         <i class="el-icon-s-order"></i>
       </div>
@@ -149,10 +149,12 @@
         questBankShow:false,
         questType:[],
         chapter:[],
+        practiceLoading: false
       }
     },
     methods: {
       getPractice(){
+        this.practiceLoading = true
         let postData={
           userid:sessionStorage.getItem('userid'),
           practiceId:this.$route.query.id
@@ -186,9 +188,11 @@
                 }else{
                   item.answer = false;
                 }
-
                 return item;
               })
+              this.practiceLoading = false
+            }).catch(() =>{
+              this.practiceLoading = false
             })
           }
 

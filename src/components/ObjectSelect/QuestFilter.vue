@@ -83,6 +83,11 @@
               type="number" min="1" max="30"></el-input>
             </template>
           </el-table-column>
+          <el-table-column label="分值">
+            <template slot-scope="scope">
+              <el-input v-model.number="scope.row.score" type="number" min="1" max="30"></el-input>
+            </template>
+          </el-table-column>
         </el-table>
       </el-form-item>
       <el-form-item>
@@ -182,7 +187,15 @@
           condition: condition,
           typeRandom: typeRandom
         }).then(res => {
-          this.$emit('showQuest',res);
+          const questData = res.bean;
+          questData.map(v => {
+            const row = this.questTypeData.filter(item => item.name === v.type)[0]
+            console.log(row);
+            if (row) {
+              v.score = row.score
+            }
+          })
+          this.$emit('showQuest', questData);
         }).catch(() =>{
           this.$emit('closeChapterType', false)
         })
@@ -194,9 +207,9 @@
         this.refreshChapter().then(res =>{
           this.toggleSelection()
         })
-        setTimeout(() => {
-          this.$refs.typeTable.toggleAllSelection()
-        },1000)
+        // setTimeout(() => {
+        //   this.$refs.typeTable.toggleAllSelection()
+        // },1000)
       },
       toggleSelection() {
         this.$nextTick(() =>{
@@ -215,7 +228,9 @@
         aggregate("Quest", "type", condition).then(res => {
           mapTree(res.bean, {"name": "_id", "value": "count"})
           this.questTypeData = res.bean;
+          this.$refs.typeTable.toggleAllSelection()
           this.questTypeData.forEach((v,i)=>{
+            this.$set(this.questTypeData[i], 'score', 1)
             if (v.value > 30) {
               this.$set(this.questTypeData[i], 'typeCount', 30)
             } else {
@@ -233,7 +248,8 @@
         })
         this.questTypeValue = list;
 
-        this.questTypeData.forEach(v=>{
+        this.questTypeData.forEach((v, i) => {
+          this.$set(this.questTypeData[i], 'score', 1)
           if(this.questTypeValue.includes(v.name)){
             if (v.typeCount==0) v.typeCount = v.value > 30 ? 30 : v.value
           }else {

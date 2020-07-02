@@ -7,22 +7,22 @@
       <div>
         <p>用户ID：{{userInfo.id}}</p>
         <p>用户账号：{{userInfo.name}}</p>
-        <p>用户部门：{{userInfo.deptName}}</p>
+        <p>用户用户组：{{userInfo.deptName}}</p>
         <p>用户角色：{{userInfo.roleNames}}</p>
         <p>用户邮箱：{{userInfo.email}}</p>
         <p>用户手机：{{userInfo.phone}}</p>
       </div>
     </el-card>
-    <el-card class="box-card">
-      <div slot="header" class="clearfix">
-        <span>分数统计：</span>
-      </div>
-      <div>
-        <p>客观题分数：{{studentInfo.sumObjScore}}</p>
-        <p>总得分数：{{studentInfo.sumTotalScore}}</p>
-        <p>试卷总分数：{{studentInfo.sumLogin}}</p>
-      </div>
-    </el-card>
+<!--    <el-card class="box-card">-->
+<!--      <div slot="header" class="clearfix">-->
+<!--        <span>分数统计：</span>-->
+<!--      </div>-->
+<!--      <div>-->
+<!--        <p>客观题分数：{{studentInfo.sumObjScore}}</p>-->
+<!--        <p>总得分数：{{studentInfo.sumTotalScore}}</p>-->
+<!--        <p>试卷总分数：{{studentInfo.sumLogin}}</p>-->
+<!--      </div>-->
+<!--    </el-card>-->
   </div>
 </template>
 <script>
@@ -34,6 +34,10 @@
         userInfo:{},
         studentInfo:{}
       }
+    },
+    created() {
+      this.getUserInfo();
+      // this.getStudentStatInfo();
     },
     methods:{
       getUserInfo:function(){
@@ -66,10 +70,6 @@
           this.studentInfo = res.bean.data[0];
         })
       },
-    },
-    created() {
-      this.getUserInfo();
-      this.getStudentStatInfo();
     }
   }
 </script>

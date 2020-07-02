@@ -45,17 +45,16 @@
         prop="score"
         align="center">
       </el-table-column>
-      <el-table-column
-        label="创建人"
-        prop="creator.name"
-        align="center">
-      </el-table-column>
+<!--      <el-table-column-->
+<!--        label="创建人"-->
+<!--        prop="creator.name"-->
+<!--        align="center">-->
+<!--      </el-table-column>-->
       <el-table-column header-align="center" label="操作" width="50">
         <template slot-scope="scope">
           <el-tooltip class="item" effect="dark" content="预览" placement="top">
             <i class="el-icon-view"  @click="previewHandle(scope.$index, scope.row)"></i>
           </el-tooltip>
-
         </template>
       </el-table-column>
     </el-table>
@@ -188,7 +187,7 @@
         })
       },
       showQuest:function(res){
-        this.tableData=res.bean;
+        this.tableData = res;
         this.tableLoading = false
       },
       addTeacherId:function(){

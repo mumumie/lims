@@ -1,6 +1,6 @@
 import axios from '../axios'
 import global from '@/utils/global'
-/* 
+/*
  * 系统登录模块
  */
 
@@ -11,7 +11,7 @@ export const login = data => { //新本地
     loginReq: {
       username: data.account,
       passwd: data.passwd,
-
+      client: data.client
     }
   }
     return axios({
@@ -22,14 +22,14 @@ export const login = data => { //新本地
     })
 }
 
-// 登录
-/*export const login = data => {
-  return axios({
-    url: 'login',
-    method: 'post',
-    data
-  })
-}*/
+// // 验证登录
+// export const LoginResp = data => {
+//   return axios({
+//     url: 'LoginResp',
+//     method: 'post',
+//     data
+//   })
+// }
 
 // 登出
 export const logout = () => {

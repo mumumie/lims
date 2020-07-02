@@ -1,7 +1,7 @@
 import axios from '../axios'
 import {addBean, deleteBean, queryBean, updateBean} from '../base'
 /*
- * 部门管理模块
+ * 用户组管理模块
  */
 let baseUrl=null;
 let typeName = 'Deptment'
@@ -36,7 +36,7 @@ export const singleDelete = (data) => {
   })
 };
 
-// 查询部门树
+// 查询用户组树
 export const findDeptTree = () => {
   return queryBean(typeName, {parentId: '',/*type:0*/})
 }

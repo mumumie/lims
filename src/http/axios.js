@@ -36,7 +36,7 @@ export default function $axios(options) {
           //   message:'登录信息失效！',
           //   type:'error'
           // })
-          router.push('/login')
+          // router.push('/login')
         }
         // 3. 根据请求方法，序列化传来的参数，根据后端需求是否序列化
         if (config.method === 'post') {
@@ -97,7 +97,6 @@ export default function $axios(options) {
             totalSize: data.bean.total
           };
         }
-
         if (data.retCode!=undefined){
           switch (data.retCode) {
             case 0:
@@ -106,14 +105,17 @@ export default function $axios(options) {
             case -1:
               vue.$throw(new ErrorResult(data.retMsg))
               Cookies.remove('token');
-              router.push('/login');
+              let wapPath = router.currentRoute.path.split('/')[1];
+              if(wapPath === 'wap'){
+                router.push({ path: '/wap/login' })
+              }else{
+                router.push({ path: '/login' })
+              }
               break;
             default:
               vue.$throw(new ErrorResult(data.retMsg))
           }
         }
-
-
         return data
       },
       err => {

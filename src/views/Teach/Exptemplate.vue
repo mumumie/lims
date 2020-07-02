@@ -530,7 +530,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data

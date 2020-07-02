@@ -2,9 +2,8 @@
   <div class="page-container">
     <div v-if="!isEdit">
       <tip :value="
-    ['显示试卷列表，能对试卷进行预览，统计、删除等；',
-    '对未开始的试卷可以修改试卷名称、考试时间等；',
-    '对已结束的试卷可以进行试卷批阅。']" />
+    ['显示学生的考试列表，状态分别为未开始、进行中、已结束。',
+    '未开始的考试需等待，进行中的考试可以点击进入考试，已结束的考试待老师批阅完之后可以查看考试结果。']" />
       <!--工具栏-->
       <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
         <el-form :inline="true" :model="filters" :size="size">
@@ -36,18 +35,16 @@
       <kt-table
         :height="600"
         :maxHeight="600"
-        :btnWidth="180"
+        :btnWidth="90"
         permsDetail=""
         permsEdit=""
         permsDelete=""
         :data="pageResult"
         :columns="filterColumns"
         :showBtnEdit="false"
-        :showBtnDetail="true"
-        :showCustom="true"
+        :showBtnDelete="false"
         :showBtnApprove="true"
-        customLabel="统计"
-        @handleCustom="handleCustom"
+        :showBatchDelete="false"
         @handleApprove="handleApprove"
         @findPage="findPage"
         @handleDetail="handleDetail"
@@ -55,63 +52,19 @@
         @handleBatchDelete="handleBatchDelete"
         @handleDelete="handleDelete">
       </kt-table>
-      <!--新增编辑界面-->
-      <el-dialog title="编辑" width="600px" :visible.sync="editVisible" :close-on-click-modal="false" append-to-body>
-        <el-form :model="dataForm" label-width="100px" :rules="dataFormRules" ref="dataForm" :size="size" label-position="right">
-          <el-form-item label="试卷名称" prop="name">
-            <el-input v-model="dataForm.name" placeholder="请输入试卷名称" style="width:193px;"></el-input>
-          </el-form-item>
-          <el-form-item label="及格分数线" prop="passScore">
-            <el-input v-model="dataForm.passScore" style="width:193px;"></el-input>
-          </el-form-item>
-          <el-form-item label="考试日期" prop="date">
-            <el-date-picker
-              v-model="dataForm.date"
-              style="width:190px;"
-              type="date"
-              value-format="yyyy-MM-dd"
-              placeholder="选择一个日期">
-            </el-date-picker>
-          </el-form-item>
-          <el-form-item label="起始时间" prop="startTime">
-            <el-time-select
-              placeholder="起始时间"
-              style="width:190px;"
-              v-model="dataForm.startTime"
-              :picker-options="{start: '00:00',step: '00:05',end: '24:00'}">
-            </el-time-select>
-          </el-form-item>
-          <el-form-item label="结束时间" prop="endTime">
-            <el-time-select
-              placeholder="结束时间"
-              style="width:190px;"
-              v-model="dataForm.endTime"
-              :picker-options="{start: '08:00',step: '00:15',end: '24:00',minTime: dataForm.startTime}">
-            </el-time-select>
-          </el-form-item>
-          <el-form-item label="用户组范围" >
-            <el-cascader
-              :options="deptData"
-              v-model="dataForm.deptmentIds"
-              :props="{multiple: true,checkStrictly: true}"
-              collapse-tags
-              clearable>
-            </el-cascader>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button :size="size" @click.native="editVisible = false">{{$t('action.cancel')}}</el-button>
-          <el-button :size="size" type="primary" @click.native="submitForm(-1)" :loading="editLoading" v-if="dataForm.status === -1">保存</el-button>
-          <el-button :size="size" type="primary" @click.native="submitForm(0)" :loading="editLoading">{{$t('action.submit')}}</el-button>
-        </div>
-      </el-dialog>
       <!--    试卷展示弹框-->
       <el-dialog
-        width="600px"
-        title="查看试卷"
+        width="800px"
+        title="试卷结果"
         append-to-body
         :visible.sync="paperVisible">
+        <div></div>
         <div class="paper_box" ref="print" v-if="scoreData.length > 0">
+          <div style="line-height: 80px;font-size: 25px;font-weight:bold;">
+            <span v-if="paperResult.status === 1">客观题得分：{{paperResult.objScore}}</span>
+            <span style="padding-left:20px;color:#ff3724;" v-if="paperResult.status === 1">总得分请等待老师批阅！</span>
+            <span v-if="paperResult.status === 2">总得分：{{paperResult.totalScore}}</span>
+          </div>
           <div v-for="(item,index) in scoreData" :key="index">
             <h3>{{AnswerIndex[index]+'、'+item.name + '(共' +item.count+'题，共'+ item.totalScore+ '分)'}}</h3>
             <div v-for="(ite,ind) in item.children" :key="ind" class="paper_quest">
@@ -125,6 +78,14 @@
                   <div>{{AnswerType[index] + '、 '}}</div>
                   <div v-html="opt"></div>
                 </div>
+              </div>
+              <div>
+                <span>作答结果： </span>
+                <span :class="ite.flag ? 'success' : 'error'" v-if="ite.baseType !== 5">
+                  {{ ite.answer && ite.answer.length ? ite.answer.toString() : '未作答' }}
+                  <i :class="ite.flag ? 'el-icon-check' : 'el-icon-close'"></i>
+                </span>
+                <div v-else v-html="ite.answer"></div>
               </div>
               <div class="detail_content" v-show="isShowAnswer">
                 <div v-if="ite.baseType === 1 || ite.baseType === 2">
@@ -145,104 +106,53 @@
                   <div v-html="ite.subjectAnswer"></div>
                 </div>
               </div>
+              <div v-if="ite.baseType === 5 && paperResult.status === 2" style="line-height: 38px;font-weight: 700;" >
+                <el-row>
+                  <el-col :span="15">得分：{{ite.topScore}}</el-col>
+                </el-row>
+                <el-row>
+                  <el-col :span="3">点评：</el-col>
+                  <el-col :span="21">
+                    {{ite.comment}}
+                  </el-col>
+                </el-row>
+              </div>
             </div>
-
           </div>
-
+          <div style="line-height: 30px;height:30px;padding-left:20px;">
+<!--            <el-checkbox v-model="paperResult.anonymous" v-if="paperResult.status === 1">是否匿名</el-checkbox>-->
+            <p v-if="paperResult.status === 2 && !paperResult.anonymous">阅卷人：{{paperResult.reviewer.nickname}}</p>
+          </div>
         </div>
         <div slot="footer" class="dialog-footer">
-          <el-button :size="size" @click.native="isShowAnswer = !isShowAnswer">{{isShowAnswer?'隐藏答案':'显示答案'}}</el-button>
-          <el-button :size="size" @click.native="$print($refs.print)">打印</el-button>
+<!--          <el-button :size="size" @click.native="isShowAnswer = !isShowAnswer">{{isShowAnswer?'隐藏答案':'显示答案'}}</el-button>-->
+<!--          <el-button :size="size" @click.native="$print($refs.print)">打印</el-button>-->
           <el-button :size="size" @click.native="paperVisible = false">{{$t('action.cancel')}}</el-button>
         </div>
       </el-dialog>
-      <!--统计界面-->
-      <el-dialog title="统计" width="600px" :visible.sync="statisticsVisible" :close-on-click-modal="false" append-to-body>
-        <div  v-if="statisticsVisible">
-          <m-echarts
-            :echartStyle="pieData.type.s"
-            id="type"
-            :titleText="pieData.type.a"
-            :tooltipFormatter="pieData.type.b"
-            :opinion="pieData.type.c"
-            :seriesName="pieData.type.d"
-            :opinionData="pieData.type.e"
-            v-on:currentEchartData="getEchartData"
-          ></m-echarts>
-          <el-divider></el-divider>
-          <m-echarts
-            v-if="pieData.difficulty.e.length !== 0"
-            id="difficulty"
-            :echartStyle="pieData.difficulty.s"
-            :titleText="pieData.difficulty.a"
-            :tooltipFormatter="pieData.difficulty.b"
-            :opinion="pieData.difficulty.c"
-            :seriesName="pieData.difficulty.d"
-            :opinionData="pieData.difficulty.e"
-            v-on:currentEchartData="getEchartData"
-          ></m-echarts>
-          <el-divider></el-divider>
-          <m-echarts
-            v-if="pieData.chapter.e.length !== 0"
-            id="chapter"
-            :echartStyle="pieData.chapter.s"
-            :titleText="pieData.chapter.a"
-            :tooltipFormatter="pieData.chapter.b"
-            :opinion="pieData.chapter.c"
-            :seriesName="pieData.chapter.d"
-            :opinionData="pieData.chapter.e"
-            v-on:currentEchartData="getEchartData"
-          ></m-echarts>
-          <el-divider></el-divider>
-          <m-echarts
-            v-if="pieData.pass.e.length !== 0"
-            id="pass"
-            :echartStyle="pieData.pass.s"
-            :titleText="pieData.pass.a"
-            :tooltipFormatter="pieData.pass.b"
-            :opinion="pieData.pass.c"
-            :seriesName="pieData.pass.d"
-            :opinionData="pieData.pass.e"
-            v-on:currentEchartData="getEchartData"
-          ></m-echarts>
-        </div>
-      </el-dialog>
-<!--      批阅弹窗-->
-      <el-drawer
-        :with-header="false"
-        append-to-body
-        size="50%"
-        :visible.sync="drawer"
-        direction="rtl">
-        <h1 style="text-align: center;">{{paper.name}}</h1>
-        <ExamResult :paper="paper" v-if="drawer"></ExamResult>
-      </el-drawer>
     </div>
   </div>
 </template>
 
 <script>
   import PopupTreeInput from "@/components/PopupTreeInput"
-  import KtTable from "@/views/Core/PaperTable"
+  import KtTable from "@/views/Core/PaperExamTable"
   import KtButton from "@/views/Core/KtButton"
   import EditQuest from "@/views/Tq/EditQuest"
-  import ExamResult from "./ExamResult"
   import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
   import { format } from "@/utils/datetime"
-  import {addBean, queryBean, updateBean,findMyExamPaper,aggregate} from "@/http/base";
+  import {addBean, queryBean, updateBean, getBean, aggregate} from "@/http/base";
   import mEcharts from '@/components/Echarts/EchartsPie'
   import {mapTree} from "../../utils";
-  import {queryCount} from "../../http/base";
   export default {
-    name:'mypaper',
+    name:'Exam',
     components:{
       PopupTreeInput,
       KtTable,
       KtButton,
       TableColumnFilterDialog,
       EditQuest,
-      mEcharts,
-      ExamResult
+      mEcharts
     },
     data() {
       return {
@@ -259,11 +169,15 @@
         pageResult: {},
         tableData:[], //批量导入试题列表
         operation: false, // true:新增, false:编辑
-        paperVisible: false, // 批阅
-        editVisible: false, // 新增编辑界面是否显示
+        paperVisible: false, // 新增编辑界面是否显示
         statisticsVisible:false,
         editLoading: false,
         loading:false,
+        dataFormRules: {
+          name: [
+            { required: true, message: '请输入用户名', trigger: 'blur' }
+          ]
+        },
         questBankData: [],
         createAnnualData:[
           {label:'2015-2016',value:2015},
@@ -286,77 +200,7 @@
         isEdit:false,
         questId:'',
         scoreData:[],
-        isShowAnswer:false,
-        pieData:{
-          chapter:{
-            a:'试卷内各章节所占比例',
-            b:'数量',
-            c:[],
-            d:'所占比例',
-            e:[],
-            s: {
-              height: '400px'
-            }
-          },
-          type:{
-            a:'试卷内各题型所占比例',
-            b:'数量',
-            c:[],
-            d:'所占比例',
-            e:[],
-            s: {
-              height: '400px'
-            }
-          },
-          difficulty:{
-            a:'试卷内难易度所占比例',
-            b:'数量',
-            c:[],
-            d:'所占比例',
-            e:[],
-            s: {
-              height: '400px'
-            }
-          },
-          pass:{
-            a:'及格/不及格所占比例(仅已阅卷)',
-            b:'数量',
-            c:[],
-            d:'所占比例',
-            e:[],
-            s: {
-              height: '400px'
-            }
-          },
-        },
-        drawer: false,
-        paper: {},
-        dataForm: {
-          name: '',
-          passScore: '',
-          date: '',
-          startTime: '',
-          endTime: '',
-          deptmentIds: []
-        },
-        dataFormRules: {
-          name: [
-            {required: true, message: '请输入试卷名称', trigger: 'blur'}
-          ],
-          passScore: [
-            {required: true, message: '请输入及格分数线', trigger: 'blur'}
-          ],
-          date: [
-            {required: true, message: '选择考试日期', trigger: 'change'}
-          ],
-          startTime: [
-            {required: true, message: '请选择开始时间', trigger: 'change'}
-          ],
-          endTime: [
-            {required: true, message: '请选择结束时间', trigger: 'change'}
-          ]
-        },
-        deptData: []
+        isShowAnswer: true
       }
     },
     watch:{
@@ -369,50 +213,6 @@
       }
     },
     methods: {
-      findDeptTree: function () {
-        this.$api.dept.findDeptTree().then((res) => {
-          let options=function(option){
-            let data=option.map( item =>{
-              let arrStr={};
-              arrStr.value=item.id;
-              arrStr.label=item.name;
-              if(item.children.length === 0){
-              }else{
-                arrStr.children=options(item.children);
-              }
-              return arrStr;
-            })
-            return data;
-          }
-          this.deptData=options(res.bean.data)
-        })
-      },
-      submitForm(status) {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            const params = Object.assign({}, this.dataForm);
-            params.deptmentIds = params.deptmentIds.flat();
-            params.status = status;
-            updateBean('Paper', params.id, params).then(res =>{
-              if (res.retCode === 0) {
-                this.findPage(null)
-                this.$message({
-                  type: 'success',
-                  message: '试卷修改成功！'
-                })
-                this.editVisible = false;
-              }
-            })
-          }
-        })
-      },
-      handleClose(done) {
-        this.$confirm('确认关闭？')
-          .then(_ => {
-            done();
-          })
-          .catch(_ => {});
-      },
       // 获取分页数据
       findPage: function (data) {
         let pageRequest={
@@ -426,7 +226,6 @@
         if(data !== null) {
           pageRequest = data.pageRequest
         }
-        pageRequest.condition['status$ne'] = 3;
         if(this.filters.questBankId){
           pageRequest.condition.questBankId = this.filters.questBankId;
         }else{
@@ -447,6 +246,7 @@
         }else{
           delete pageRequest.condition['name$regex'];
         }
+        pageRequest.condition['status$ne'] = -1
         this.$api.paper.findPage(pageRequest).then((res) => {
           this.pageResult = res.pageResult;
         }).then(data!=null?data.callback:'')
@@ -463,84 +263,52 @@
       questBankChangeHandle:function(val){
         let questBankData = this.questBankData[this.questBankData.findIndex(item => item.id === val)]
       },
-      handleCustom:function(params){
-        //let paperId = params.row.id;
-        let paperId = params.row.id;
-        this.$api.base.queryBean("PaperQuest", {
-          "paperId": paperId
-        }).then(res => {
-          let questIds = res.bean.data.map(v => v.questId);
-          let condition = {"id$in": questIds}
-          Promise.all([aggregate("Quest", "chapter", condition),aggregate("Quest", "type", condition),aggregate("Quest", "difficulty", condition),aggregate("PaperResult", "scoreDegree", {
-            "status":2,
-            "paperId": paperId
-          })]).then(res =>{
-            let pieData = res.map(v =>{
-              mapTree(v.bean, {"name": "_id", "value": "count"})
-              return v.bean;
-            })
-            this.pieData.chapter.e = pieData[0];
-            this.pieData.chapter.c = pieData[0].map(v => v.name);
-            this.pieData.type.e = pieData[1];
-            this.pieData.type.c = pieData[1].map(v => v.name);
-            // console.log(pieData[1])
-            // console.log(pieData[pieData[1].map(v => v.name)])
-            this.pieData.difficulty.e = pieData[2].map(v =>{
-              v.name = this.difficulty[v.name];
-              return v;
-            });
-            this.pieData.difficulty.c = this.pieData.difficulty.e.map(v => v.name);
-            if (pieData[3].length==0){
-              this.pieData.pass.e = []
-            }else {
-              let passType = ['不及格','及格'];
-              this.pieData.pass.e = pieData[3].map(v => {
-                v.name = passType[v.name];
-                return v
-              })
-              this.pieData.pass.c = this.pieData.pass.e.map(v => v.name)
-              console.log(this.pieData.pass.c);
-            }
-            this.statisticsVisible = true;
+      //考试
+      handleApprove:function(params){
+        const date = new Date().getTime()
+        if (params.row.validTime[0] > date) {
+          this.$message({
+            type: 'warning',
+            message: '考试还未开始，请耐心等待！'
           })
-
-            // aggregate("PaperResult", "scoreDegree", {
-            //   "status":2,
-            //   "paperId": paperId
-            // }).then(res => {
-            //
-            // });
-
-          /*let passList = [];
-          let passScore = params.row.passScore
-          queryCount("PaperResult", {
-            "paperId": paperId,
-            "totalScore$gte": passScore,
-
-          }).then(res=>{
-            passList.push({
-              "name": '不及格',
-              "value": '及格'
+        } else if (params.row.validTime[0] <= date && date <= params.row.validTime[1]) {
+          if(params.row.paperResult === null){
+            queryBean('PaperQuest', {paperId: params.row.id}).then(res =>{
+              let arrValues = res.bean.data.map((item) => ({questId: item.questId}));
+              let doc={
+                paperId: params.row.id,
+                paperResultAnswerList: arrValues
+              };
+              addBean('PaperResult', doc).then(res =>{
+                if (res.retCode===0){
+                  this.$message.success('进入考试！')
+                  setTimeout(() =>{
+                    this.$router.push('/Paper/ExamDetail?id=' + params.row.id);
+                  },500)
+                }
+              }).catch(err =>{
+                this.$message('添加试卷失败！'+err)
+              })
             })
+          } else {
+            // 通过菜单URL跳转至指定路由
+            if (params.row.paperResult.status === 1) {
+              this.$message.warning('您已提交该试卷，请耐心等待老师批阅！')
+            } else {
+              this.$router.push('/Paper/ExamDetail?id=' + params.row.id);
+            }
+          }
+        } else if (params.row.validTime[1] < date) {
+          if (params.row.paperResult !== null && params.row.paperResult.status !== 0) {
+            this.handleDetail(params)
+          } else {
+            this.$message({
+              type: 'warning',
+              message: '您未提交此次考试答案，无结果查看！'
+            })
+          }
 
-          })*/
-
-          // aggregate("Quest", "chapter", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
-          // aggregate("Quest", "type", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
-          // aggregate("Quest", "difficulty", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
-        })
-      },
-      getEchartData(val){
-        console.log(val);
+        }
       },
       // 单个删除
       handleDelete: function (params) {
@@ -588,10 +356,11 @@
       },
       // 显示预览界面
       handleDetail: function (params) {
+        this.paperResult = params.row.paperResult;
         let postData = {
           paperId:params.row.id
         }
-        queryBean('PaperQuest',postData).then(res =>{
+        queryBean('PaperQuest', postData).then(res =>{
           let questBankData = params.row.questBank;
           let selectType = [
             {type:1,arrStr:'singleSelectType'},
@@ -609,7 +378,7 @@
             }
           });
           let scoreData=[];
-          let questList = res.bean.data.map(item =>{
+          let questList=res.bean.data.map(item =>{
             item.quest.score = item.score
             return item.quest;
           });
@@ -622,33 +391,30 @@
             scoreData[index].totalScore = scoreData[index].children.reduce((prev,next) => (prev + next.score), 0);
           })
           this.scoreData = scoreData.filter(item => item.count !== 0);
+          this.scoreData.map(item => {
+            item.children.map(v => {
+              const answer = params.row.paperResult.paperResultAnswerList.filter(item => item.questId === v.id)[0]
+              if (v.baseType === 1) {
+                v.answer = answer.optionAnswer && answer.optionAnswer.length > 0 ? this.AnswerType[answer.optionAnswer[0]] : ''
+              } else if (v.baseType === 2) {
+                v.answer = answer.optionAnswer.map(v => this.AnswerType[v])
+              } else if (v.baseType === 3) {
+                v.answer = answer.tfAnswer
+              } else if (v.baseType === 4) {
+                v.answer = answer.blankAnswer
+              } else if (v.baseType === 5) {
+                v.answer = answer.answerContent
+              }
+              this.$set(v, 'topScore', answer.score)
+              this.$set(v, 'comment', answer.comment)
+              v.flag = answer.score > 0 ? true : false;
+            })
+          })
           this.paperVisible = true;
         })
+
         // this.previewData = Object.assign({},params.row)
-      },
-      // 批阅
-      handleApprove:function(params){
-        this.paper = params.row;
-        if (params.row.status === -1 || params.row.status === 0) {
-          this.dataForm = {
-            id: params.row.id,
-            name: params.row.name,
-            passScore: params.row.passScore,
-            date: params.row.date,
-            startTime: params.row.startTime,
-            endTime: params.row.endTime,
-            deptmentIds: params.row.deptmentIds,
-            status: params.row.status
-          }
-          this.editVisible = true;
-        } else if (params.row.status === 1) {
-          this.$message({
-            type: 'warning',
-            message: '考试进行中，请考试结束后进行批阅！'
-          })
-        } else if (params.row.status === 2) {
-          this.drawer = true;
-        }
+
       },
       // 处理表格列过滤显示
       displayFilterColumnsDialog: function () {
@@ -663,18 +429,15 @@
       initColumns: function () {
         this.columns = [
           /*{prop:"id", label:"ID", minWidth:50},*/
-          {prop:"name", label:"试卷名称"},
-          {prop:"questBank.name", label:"题库名称"},
-          {prop:"date", label:"考试日期"},
-          {prop:"startTime", label:"开始"},
-          {prop:"endTime", label:"结束"},
-          {prop:"status", label:"状态", formatter: this.statusFilter},
-          {prop:"questBank.course.name", label:"课程名称"},
-          {prop:"createAnnual", label:"学年", formatter: this.annualFilter},
-          {prop:"semester", label:"学期"},
-          {prop:"waitForReview", label:"待批阅"},
-          // {prop:"deptmentIds", label:"用户组范围"},
-
+          {prop:"name", label:"试卷名称", minWidth:120},
+          {prop:"questBank.course.name", label:"课程名称", minWidth:120},
+          {prop:"questBank.name", label:"题库名称", minWidth:120},
+          {prop:"createAnnual", label:"学年", minWidth:120, formatter: this.annualFilter},
+          {prop:"semester", label:"学期", minWidth:120},
+          {prop:"date", label:"考试日期", minWidth:120},
+          {prop:"startTime", label:"开始时间点", minWidth:120},
+          {prop:"endTime", label:"结束时间点", minWidth:120},
+          {prop:"status", label:"状态", minWidth:120, formatter: this.statusFilter},
         ];
         // this.filterColumns = JSON.parse(JSON.stringify(this.columns));
         this.filterColumns = this.columns;
@@ -740,7 +503,7 @@
       },
     },
     created() {
-      this.findDeptTree()
+
     },
     mounted() {
       this.findQuestBank();
@@ -764,6 +527,12 @@
   .paper_option{
     padding:5px 10px;
     display: flex;
+  }
+  .paper_quest .success{
+    color: #44ff04;
+  }
+  .paper_quest .error{
+    color:#f90208;
   }
 </style>
 

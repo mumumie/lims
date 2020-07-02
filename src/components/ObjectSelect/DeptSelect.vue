@@ -5,7 +5,7 @@
       :options="deptOptionTree"
       :props="{ multiple: true, checkStrictly: true}"
       v-model="selected1"
-      clearable filterable @change="(v)=>$emit('input', v)" placeholder="请选择部门"></el-cascader>
+      clearable filterable @change="(v)=>$emit('input', v)" placeholder="请选择用户组"></el-cascader>
   </el-col>
 </template>
 
@@ -15,7 +15,7 @@
     props: ['value'],
     data() {
       return {
-        deptOptionTree: [],//树状部门选项
+        deptOptionTree: [],//树状用户组选项
         selected1: this.value,
       }
     },

@@ -1,8 +1,7 @@
 <template>
   <div class="page-container">
     <tip :value="
-    ['包含所有用户（管理员，教师，学生）的帐号的增删改查——用户一览，添加学生，编辑等等',
-    '用户必须要指定一个或多个角色，该用户登录后才能看到该角色拥有的菜单。']" />
+    ['创建和管理所有账户，能对账户进行新增、编辑及删除，所创建的账户必须要赋予一个或多个角色。']" />
     <!--工具栏-->
     <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
       <el-form :inline="true" :model="filters" :size="size">
@@ -26,7 +25,7 @@
         <el-form-item>
           <el-cascader
             :options="deptData1"
-            placeholder="部门"
+            placeholder="用户组"
             v-model="filters.deptmentId"
             :props="{ checkStrictly: true }"
             clearable>
@@ -88,8 +87,7 @@
     </kt-table>
     <!--新增编辑界面-->
     <el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false" append-to-body>
-      <el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size"
-               label-position="right">
+      <el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size" label-position="right" v-if="dialogVisible">
         <el-form-item label="ID" prop="id" v-if="false">
           <el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
         </el-form-item>
@@ -99,10 +97,10 @@
         <el-form-item label="姓名" prop="nickname">
           <el-input v-model="dataForm.nickname" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="passwd">
-          <el-input v-model="dataForm.passwd" type="password" show-password auto-complete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="部门" prop="deptName">
+<!--        <el-form-item label="密码" prop="passwd">-->
+<!--          <el-input v-model="dataForm.passwd" type="password" show-password auto-complete="off" disabled=""></el-input>-->
+<!--        </el-form-item>-->
+        <el-form-item label="用户组" prop="deptName">
           <popup-tree-input
             :data="deptData"
             :props="deptTreeProps"
@@ -166,7 +164,7 @@
           </el-table-column>
           <el-table-column prop="passwd" label="密码" >
           </el-table-column>
-          <el-table-column prop="deptmentId" label="部门" >
+          <el-table-column prop="deptmentId" label="用户组" >
           </el-table-column>
           <el-table-column prop="email" label="邮箱" >
           </el-table-column>
@@ -197,6 +195,28 @@
       TableColumnFilterDialog
     },
     data() {
+      const checkPhone = (rule, value, callback) => {
+        if (value) {
+          const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
+          console.log(reg.test(value));
+          if (reg.test(value)) {
+            callback();
+          } else {
+            return callback(new Error('请输入正确的手机号'));
+          }
+        }
+      };
+      const checkEmail = (rule, value, callback) => {
+        if (value) {
+          const reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
+          console.log(reg.test(value));
+          if (reg.test(value)) {
+            callback();
+          } else {
+            return callback(new Error('请输入正确的邮箱号'));
+          }
+        }
+      };
       return {
         val:[],
         size: 'mini',
@@ -229,7 +249,13 @@
             { required: true, message: '请输入用户角色', trigger: 'blur' }
           ],
           deptName: [
-            { required: true, message: '请输入部门', trigger: 'blur' }
+            { required: true, message: '请输入用户组', trigger: 'blur' }
+          ],
+          phone: [
+            { validator: checkPhone, trigger: 'blur' }
+          ],
+          email: [
+            { validator: checkEmail, trigger: 'blur' }
           ]
         },
         // 新增编辑界面数据
@@ -237,7 +263,6 @@
           id: 0,
           name: '',
           nickname: '',
-          passwd: '',
           deptmentId: '',
           deptName: '',
           email: '',
@@ -339,7 +364,7 @@
           id: 0,
           name: '',
           nickname: '',
-          passwd: '',
+          passwd: '111111',
           deptmentId: 1,
           deptName: '',
           email: '',
@@ -409,7 +434,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data;
@@ -454,7 +479,7 @@
           /*{prop:"id", label:"ID", minWidth:50},*/
           {prop:"name", label:"账号", minWidth:120},
           {prop:"nickname", label:"姓名", minWidth:120},
-          {prop:"deptName", label:"部门", minWidth:120},
+          {prop:"deptName", label:"用户组", minWidth:120},
           {prop:"roleNames", label:"角色", minWidth:100},
           {prop:"email", label:"邮箱", minWidth:120},
           {prop:"phone", label:"手机", minWidth:100},
@@ -516,7 +541,7 @@
                 arr['name'] =  item['账号'];
                 arr['nickname'] =  item['昵称'];
                 arr['passwd'] =  String(item['密码']);
-                arr['deptmentId'] =  item['部门id'];
+                arr['deptmentId'] =  item['用户组id'];
                 arr['email'] =  item['邮箱'];
                 arr['phone'] =  item['手机'];
                 return arr;
@@ -567,7 +592,7 @@
             type: 'warning'
           }).then(() => {
             import('@/vendor/Export2Excel').then(excel => {
-              const tHeader = ['账号', '昵称', '部门', '角色', '邮箱', '手机'] // 表头
+              const tHeader = ['账号', '昵称', '用户组', '角色', '邮箱', '手机'] // 表头
               const filterVal = ['name', 'nickname', 'deptName', 'roleNames', 'email', 'phone'] // 需要导出的项目
               const list = data1 ;// 所有列表数据
               const data = this.formatJson(filterVal, list);

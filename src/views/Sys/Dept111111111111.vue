@@ -4,7 +4,7 @@
 	<div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
 		<el-form :inline="true" :model="filters" :size="size">
       <el-form-item>
-        <el-select v-model="filters.type" clearable placeholder="请选择部门" style="width:120px;">
+        <el-select v-model="filters.type" clearable placeholder="请选择用户组" style="width:120px;">
           <el-option label="部门" :value="0"></el-option>
           <el-option label="班级" :value="1"></el-option>
         </el-select>
@@ -33,13 +33,13 @@
         prop="id" header-align="center" align="center" width="80" label="ID">
       </el-table-column>-->
       <el-table-column
-        prop="name" header-align="center" align="left" label="部门名称">
-      </el-table-column>
-      <el-table-column 
-        prop="parentName" header-align="center" align="center" width="120" label="上级部门">
+        prop="name" header-align="center" align="left" label="用户组名称">
       </el-table-column>
       <el-table-column
-        prop="orderNum" header-align="center" align="center" label="上级部门ID">
+        prop="parentName" header-align="center" align="center" width="120" label="上级用户组">
+      </el-table-column>
+      <el-table-column
+        prop="orderNum" header-align="center" align="center" label="上级用户组ID">
       </el-table-column>
       <el-table-column
         prop="createTime" header-align="center" align="center" label="创建时间" :formatter="dateFormat">
@@ -57,13 +57,13 @@
     </el-table>
     <!-- 新增修改界面 -->
     <el-dialog :title="operation ? '新增' : '修改'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false">
-      <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="submitForm()" 
+      <el-form :model="dataForm" :rules="dataRule" ref="dataForm" @keyup.enter.native="submitForm()"
         label-width="80px" :size="size" style="text-align:left;">
         <el-form-item label="名称" prop="name">
           <el-input v-model="dataForm.name" placeholder="名称"></el-input>
         </el-form-item>
-        <el-form-item label="上级部门" prop="parentName">
-            <popup-tree-input 
+        <el-form-item label="上级用户组" prop="parentName">
+            <popup-tree-input
               :data="popupTreeData"
               :props="popupTreeProps"
               :prop="dataForm.parentName"
@@ -71,8 +71,8 @@
               :currentChangeHandle="handleTreeSelectChange">
             </popup-tree-input>
         </el-form-item>
-        <el-form-item label="部门类型">
-          <el-select v-model="dataForm.type" clearable placeholder="请选择部门" >
+        <el-form-item label="用户组类型">
+          <el-select v-model="dataForm.type" clearable placeholder="请选择用户组" >
             <el-option label="部门" :value="0"></el-option>
             <el-option label="班级" :value="1"></el-option>
           </el-select>
@@ -127,10 +127,10 @@ export default {
       },
       dataRule: {
         name: [
-          { required: true, message: '部门名称不能为空', trigger: 'blur' }
+          { required: true, message: '用户组名称不能为空', trigger: 'blur' }
         ],
         parentName: [
-          { required: true, message: '上级部门不能为空', trigger: 'change' }
+          { required: true, message: '上级用户组不能为空', trigger: 'change' }
         ]
       },
       popupTreeData: [],
@@ -164,7 +164,7 @@ export default {
         this.loading = false
 			})
     },
-    // 获取部门列表
+    // 获取用户组列表
     findDeptTree: function () {
       let postData = {
         level:0
@@ -204,7 +204,7 @@ export default {
         })
       })
     },
-    // 获取删除的包含子部门的id列表
+    // 获取删除的包含子用户组的id列表
     getDeleteIds (ids, row) {
       ids.push({id:row.id})
       if(row.children != null) {
@@ -214,7 +214,7 @@ export default {
       }
       return ids
     },
-      // 部门树选中
+      // 用户组树选中
     handleTreeSelectChange (data, node) {
       this.dataForm.parentId = data.id
       this.dataForm.parentName = data.name
@@ -241,7 +241,7 @@ export default {
     dateFormat: function (row, column, cellValue, index){
       return format(row[column.property])
     }
-    
+
 	},
 	mounted() {
     this.findTreeData();

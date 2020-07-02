@@ -9,27 +9,29 @@
       </div>
       <div class="hot_phone">
         <div class="phone"><span>客服热线</span><span>0561-6062307</span></div>
-        <div class="set"><i class="el-icon-s-tools"></i></div>
-        <div class="close"><i class="el-icon-close"></i></div>
+<!--        <div class="set"><i class="el-icon-s-tools"></i></div>-->
+<!--        <div class="close"><i class="el-icon-close"></i></div>-->
       </div>
     </div>
     <div class="login_box">
       <div class="login_input">
         <el-form :model="loginForm" :rules="fieldRules" ref="loginForm" size="mini" label-position="right" label-width="120px" @keyup.enter.native="login">
-
           <p class="title">智慧实验室</p>
           <el-form-item prop="account" label="登录账号">
             <el-input type="text" v-model="loginForm.account" style="width:200px;" placeholder="账号"></el-input>
-            <el-checkbox v-model="accountChecked">记住账号</el-checkbox>
+<!--            <el-checkbox v-model="accountChecked">记住账号</el-checkbox>-->
           </el-form-item>
           <el-form-item prop="passwd" label="密  码">
             <el-input type="password" v-model="loginForm.passwd" style="width:200px;" placeholder="密码"></el-input>
             <el-checkbox v-model="passwdChecked">记住密码</el-checkbox>
             <!--<span class="forget">忘记密码？</span>-->
+            <el-radio-group v-model="loginForm.client">
+              <el-radio :label="1">桌面版</el-radio>
+              <el-radio :label="2">手机版</el-radio>
+            </el-radio-group>
           </el-form-item>
-
           <el-form-item style="width:100%;padding-top:15px;">
-            <el-button type="primary" style="width:140px;" class="btn" @click.native.prevent="login" :loading="loading">账号登录</el-button>
+            <el-button type="primary" style="width:140px;" class="btn" @click.native.prevent="loginResp" :loading="loading">账号登录</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -37,15 +39,13 @@
         <img src="/static/images/login_build.jpg" alt="">
       </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import Cookies from "js-cookie"
-import {post} from "@/http/base";
+import {post, queryBean, nonauthQueryBean} from "@/http/base";
 import {ErrorResult} from "../utils/error";
 export default {
   name: 'Login',
@@ -54,7 +54,8 @@ export default {
       loading: false,
       loginForm: {
         account: '',
-        passwd: ''
+        passwd: '',
+        client: 1
       },
       fieldRules: {
         account: [
@@ -63,10 +64,6 @@ export default {
         passwd: [
           {  message: '请输入密码', trigger: 'blur' }
         ]
-        // ,
-        // captcha: [
-        //   { required: true, message: '请输入验证码', trigger: 'blur' }
-        // ]
       },
       checked: true,
       accountChecked:false,
@@ -84,37 +81,55 @@ export default {
   methods: {
     login() {
       this.loading = true;
-      let userInfo = {account:this.loginForm.account, passwd:this.loginForm.passwd}
+      let userInfo = Object.assign({}, this.loginForm)
       this.$api.login.login(userInfo).then((res) => {
         if(res.retCode === 0){
-          if(this.accountChecked && this.passwdChecked){
+          if(this.passwdChecked){
             localStorage.setItem('user', JSON.stringify(userInfo))
-          }else if(this.accountChecked){
-            localStorage.setItem('user', JSON.stringify({account:this.loginForm.account, passwd:''}))
-          }else if(this.passwdChecked){
-            localStorage.setItem('user', JSON.stringify({account:'', passwd:this.loginForm.passwd}))
           }else{
             localStorage.removeItem('user')
           }
           Cookies.set('token', res.token); // 放置token到Cookie 新本地
+          localStorage.setItem('token', res.token)
           sessionStorage.setItem('user', userInfo.account); // 保存用户到本地会话
           sessionStorage.setItem('userid', res.userid);
           this.$store.commit('menuRouteLoaded', false); // 要求重新加载导航菜单
           this.mainTabs=[];
           this.navMainTree=[];
           this.navTree=[];
-          post("getAccount", {userid: res.userid}).then(res2 => {
-            if(res2.bean.roleNames.indexOf('学生')!=-1){
-              this.$router.push('/practice/practiceResult');
+          if(this.loginForm.client === 1){
+            post("getAccount", {userid: res.userid}).then(res2 => {
+              if(res2.bean.roleNames.indexOf('学生')!=-1){
+                this.$router.push('/paper/exam');
+              }else{
+                this.$router.push('/sys/course');
+              }
               this.loading = false
-            }else{
-              this.$router.push('/sys/course');
-              this.loading = false
-            }
-          })
+            })
+          }else{
+            this.$router.push('/wap/home');
+            this.loading = false
+          }
+        }
+      });
+    },
+    loginResp(){
+      nonauthQueryBean('LoginResp', { username: this.loginForm.account}, {pageSize:1, pageNum:0, sort: {insertDt: -1}}).then(res =>{
+        if (res.bean.data.length === 0 || res.bean.data[0].token === localStorage.getItem('token')) {
+          this.login()
+        }else{
+          this.$confirm('帐号在其他地方登录过，是否仍进行登录？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.login()
+          }).catch(() => {
+
+          });
         }
 
-      });
+      })
     },
     refreshCaptcha: function(){
       this.loginForm.src = this.global.backupBaseUrl1 + "/captcha.jpg?t=" + new Date().getTime();
@@ -144,12 +159,7 @@ export default {
     this.logout();
     if(localStorage.getItem('user')){
       const user = JSON.parse(localStorage.getItem('user'))
-      if (user.account) {
-        this.accountChecked = true;
-      }
-      if (user.passwd) {
-        this.passwdChecked = true;
-      }
+      this.passwdChecked = true;
       this.loginForm = Object.assign(user)
     }
   },

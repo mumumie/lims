@@ -13,6 +13,9 @@
         <el-form-item label="试卷名称" prop="name">
           <el-input v-model="formData.name" placeholder="请输入试卷名称" style="width:193px;"></el-input>
         </el-form-item>
+        <el-form-item label="及格分数线" prop="passScore">
+          <el-input v-model="formData.passScore" style="width:193px;"></el-input>
+        </el-form-item>
         <el-form-item label="成卷学年" prop="createAnnual">
           <el-select v-model="formData.createAnnual" placeholder="请选择成卷学年">
             <el-option :label="item.label" :value="item.value" v-for="(item,index) in createAnnualData"
@@ -25,9 +28,38 @@
             <el-option label="第二学期" value="第二学期"></el-option>
           </el-select>
         </el-form-item>
-      </div>
-      <div class="form-data-flex">
-
+        <el-form-item label="考试日期" prop="date">
+          <el-date-picker
+            v-model="formData.date"
+            style="width:190px;"
+            type="date"
+            value-format="yyyy-MM-dd"
+            placeholder="选择一个日期">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="考试时间">
+          <el-time-select
+            placeholder="起始时间"
+            style="width:190px;"
+            v-model="formData.startTime"
+            :picker-options="{start: '08:00',step: '00:05',end: '24:00'}">
+          </el-time-select>
+          <el-time-select
+            placeholder="结束时间"
+            style="width:190px;"
+            v-model="formData.endTime"
+            :picker-options="{start: '08:00',step: '00:05',end: '24:00',minTime: formData.startTime}">
+          </el-time-select>
+        </el-form-item>
+        <el-form-item label="用户组范围" required>
+          <el-cascader
+            :options="deptData"
+            v-model="formData.deptmentIds"
+            :props="{multiple: true,checkStrictly: true}"
+            collapse-tags
+            clearable>
+          </el-cascader>
+        </el-form-item>
       </div>
       <el-form-item label="试题列表">
         <el-button icon="el-icon-circle-plus-outline" @click="addQuestId">题目选择器</el-button>
@@ -121,7 +153,8 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="previewPaper">预览试卷</el-button>
-        <el-button type="primary" @click="submitManual">保存试卷</el-button>
+        <el-button type="primary" @click="submitManual(-1)">保存试卷</el-button>
+        <el-button type="primary" @click="submitManual(0)">提交试卷</el-button>
       </el-form-item>
       <!--    详情展示弹框-->
       <el-dialog
@@ -248,13 +281,20 @@
         questVisible: false,
         detailVisible: false,
         paperVisible: false,
+        selectedDept: [],
+        deptData: [],
         formData: {
+          date: '',
+          startTime: '',
+          endTime: '',
           id: 0,
           name: '',
           remark: '',
           courseId: '',
           createAnnual: 2020,
           semester: '第一学期',
+          passScore: 0,
+          deptmentIds: []
         },
         formDataRules: {
           questBankId: [
@@ -269,17 +309,24 @@
           semester: [
             {required: true, message: '请选择试卷学期', trigger: 'change'}
           ],
+          date: [
+            {required: true, message: '请选择考试时间', trigger: 'change'}
+          ],
+          startTime: [
+            {required: true, message: '请选择考试时间', trigger: 'change'}
+          ],
           difficulty: [
             {required: true, message: '请输入难易度', trigger: 'change'}
-          ],
+          ]
         },
         createAnnualData: [
-          {label: '2015-2016', value: 2015},
-          {label: '2016-2017', value: 2016},
           {label: '2017-2018', value: 2017},
           {label: '2018-2019', value: 2018},
           {label: '2019-2020', value: 2019},
           {label: '2020-2021', value: 2020},
+          {label: '2021-2022', value: 2021},
+          {label: '2022-2023', value: 2022},
+          {label: '2023-2024', value: 2023}
         ],
         questList: [],
         questBankData: [],
@@ -294,6 +341,7 @@
     },
     watch: {
       totalScore: function (val) {
+        console.log(this.formData.deptmentIds)
         this.changeScore(this.questList);
       },
       totalCount: function (val) {
@@ -309,6 +357,24 @@
       },
     },
     methods: {
+      findDeptTree: function () {
+        this.$api.dept.findDeptTree().then((res) => {
+          let options=function(option){
+            let data=option.map( item =>{
+              let arrStr={};
+              arrStr.value=item.id;
+              arrStr.label=item.name;
+              if(item.children.length === 0){
+              }else{
+                arrStr.children=options(item.children);
+              }
+              return arrStr;
+            })
+            return data;
+          }
+          this.deptData=options(res.bean.data)
+        })
+      },
       findCourse: function () {
         let condition = {};
         queryBean('QuestBank', condition)
@@ -438,7 +504,7 @@
         this.scoreData = scoreData.filter(item => item.count !== 0);
         this.questList = newQuestList;
       },
-      submitManual: function () {
+      submitManual: function (val) {
         this.$refs['formData'].validate((valid) => {
           if (valid) {
             let params = Object.assign({}, this.formData);
@@ -449,12 +515,15 @@
               })
               return false;
             }
+            params.scoreSum = this.totalScore
+            params.deptmentIds = params.deptmentIds.flat()
+            params.status = val
             console.log(params);
             this.$api.paper.save(params).then((res) => {
               if (res.retCode === 0) {
                 let questList = this.questList.map(item => {
                   return {
-                    paperQuestId: res.bean.id,
+                    paperId: res.bean.id,
                     questId: item.id,
                     score: item.score
                   }
@@ -466,6 +535,9 @@
                       message: '试卷添加成功！！！'
                     })
                     this.$refs['formData'].resetFields()
+                    this.formData.startTime = ''
+                    this.formData.endTime = ''
+                    this.formData.deptmentIds = []
                     this.questList = [];
                   }
                 })
@@ -490,6 +562,9 @@
     },
     created() {
       this.findCourse();
+    },
+    mounted() {
+      this.findDeptTree();
     }
   }
 </script>
@@ -500,7 +575,6 @@
     flex-wrap:wrap;
   }
   .form-data-flex>div{
-    width:340px;
     flex:none;
   }
   .paper_box h3 {

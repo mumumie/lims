@@ -21,12 +21,14 @@ export const mapTree = (tree, map)=>{
     //tree.key = tree.id;
     //tree.label = tree.name;
 
-    if(tree.children!=undefined){
+    if(tree.children!=undefined ){
       if (tree.children instanceof Array && tree.children.length < 1) {
         tree.children = undefined;
       } else {
         mapTree(tree.children, map);
       }
+    }else{
+      tree.children=[]
     }
   }
 }

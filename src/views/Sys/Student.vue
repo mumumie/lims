@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <tip :value="
-    ['学生选课的设置，选择一门或多门教师的授课。前提要有教师授课']" />
+    ['学生根据教师及其关联的课程来进行选课。前提是教师及课程已进行关联。']" />
     <!--工具栏-->
     <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
       <el-form :inline="true" :model="filters" :size="size">
@@ -61,7 +61,7 @@
             placeholder="请选择学年"
             clearable
             style="width:200px;">
-            <el-option v-for="(item,index) in annualData" :key="index" :label="item.label" :value="index"></el-option>
+            <el-option v-for="(item,index) in annualData" :key="index" :label="item.label" :value="item.value"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="选择学期" prop="annual">
@@ -157,7 +157,7 @@
           id: 0,
           name: '',
           nickname: '',
-          annual:'',
+          annual: 2020,
           semester:''
         },
         deptData: [],
@@ -170,12 +170,12 @@
         excelData:[],
         excelAllData:[],
         annualData:[
-          {label:'2014-2015'},
-          {label:'2015-2016'},
-          {label:'2016-2017'},
-          {label:'2017-2018'},
-          {label:'2018-2019'},
-          {label:'2019-2020'},
+          {label:'2017-2018', value: 2017},
+          {label:'2018-2019', value: 2018},
+          {label:'2019-2020', value: 2019},
+          {label:'2020-2021', value: 2020},
+          {label:'2021-2022', value: 2021},
+          {label:'2022-2023', value: 2022},
         ]
       }
     },
@@ -321,7 +321,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data;
@@ -353,7 +353,7 @@
       },
       // 时间格式化
       annualFormat:function(row, column, cellValue, index){
-        return this.annualData[row.annual].label;
+        return row.annual + '-' + (row.annual + 1);
       },
       // 处理表格列过滤显示
       displayFilterColumnsDialog: function () {

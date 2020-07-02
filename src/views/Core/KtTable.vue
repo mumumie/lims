@@ -72,11 +72,11 @@ export default {
     },
     maxHeight: {  // 表格最大高度
       type: Number,
-      default: 420
+      default: 460
     },
     height: {  // 表格最大高度
       type: Number,
-      default: 250
+      default: 460
     },
     showOperation: {  // 是否显示操作组件
       type: Boolean,

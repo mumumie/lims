@@ -9,14 +9,7 @@ import {addBean, queryBean, updateBean} from "../base";
 let baseUrl=null;
 let typeName = 'Paper'
 export const save = (data) => {
-  let doc = {
-    name:data.name,
-    remark: data.remark,
-    questBankId: data.questBankId,
-    createAnnual: data.createAnnual,
-    semester: data.semester,
-    difficulty: data.difficulty,
-  };
+  let doc = data
   if(data.id==0){ //新增
     return addBean(typeName, doc)
   }else { //修改

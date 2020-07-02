@@ -11,7 +11,6 @@ const Intro = () => import('@/views/Intro/Intro');
 const Home = () => import('@/views/Home');
 const Login = () => import('@/views/Login');
 const QuestFilter = () => import('@/components/ObjectSelect/QuestFilter');
-const CurriculumDetail = () => import('@/views/Teach/CurriculumDetail');
 const Test = () => import('@/views/Test/Index');
 
 const Wap = () => import('@/views/Wap/Index');
@@ -197,22 +196,11 @@ function addDynamicMenuAndRoutes(userName, to, from) {
 
     let path = router.apps[0]._route.fullPath;
     if(res.result.menuTree.length>0 && path.split('/')[1] !== 'wap'){
-      if(path.split('/')[1] === 'practice'){
-        store.commit('setActiveIndex', 4)
-        store.commit('setNavTree', res.result.menuTree[4].children)
-      }else if(path.split('/')[1] === 'paper'){
-        store.commit('setActiveIndex', 3)
-        store.commit('setNavTree', res.result.menuTree[3].children)
-      }else if(path.split('/')[1] === 'sys'){
-        store.commit('setActiveIndex', 0)
-        store.commit('setNavTree', res.result.menuTree[0].children)
-      }else if(path.split('/')[1] === 'qb'){
-        store.commit('setActiveIndex', 1)
-        store.commit('setNavTree', res.result.menuTree[1].children)
-      }else if(path.split('/')[1] === 'tq'){
-        store.commit('setActiveIndex', 2)
-        store.commit('setNavTree', res.result.menuTree[2].children)
-      }else{
+      const pathIndex = res.result.menuTree.findIndex(v => v.code === path.split('/')[1])
+      if (pathIndex > -1) {
+        store.commit('setActiveIndex', pathIndex)
+        store.commit('setNavTree', res.result.menuTree[pathIndex].children)
+      } else {
         store.commit('setActiveIndex', 0)
         store.commit('setNavTree', res.result.menuTree[0].children)
       }
@@ -313,8 +301,8 @@ function addDynamicRoutes (menuList = [], routes = []) {
 
  if (temp.length >= 1) {
    routes.push({
-     path:'teach/curriculumDetail',
-     component: CurriculumDetail,
+     path:'paper/examDetail',
+     component: () => import('@/views/Paper/ExamDetail'),
      name: '考试试卷',
      meta: {
        icon: 'el-icon-tableware',

@@ -1,9 +1,8 @@
 <template>
   <div class="page-container">
     <tip :value="
-    ['题库是某一门课程中一大批题目的集合，试卷和练习依赖于题库而从中抽取题目。',
-    '创建题库后，在试题中创建题目以丰富该题库',
-    '非管理员只能查询自己所在机构下用户创建的题库(自建题库)，以及非自建题库']" />
+    ['题库是某一门课程中一大批题目的集合，题库的建立基于课程，试卷和练习依赖于题库而从中抽取题目。',
+    '先创建题库后，在试题中创建题目以丰富该题库']" />
     <!--工具栏-->
     <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
       <el-form :inline="true" :model="filters" :size="size">
@@ -185,14 +184,14 @@
           </el-switch>
           <el-input v-model="dataForm.reviewerName" auto-complete="off" @focus="addTeacherId" placeholder="请选择审核人" v-if="dataForm.isReviewer"></el-input>
         </el-form-item>
-        <el-form-item label="题库使用范围" >
-          <el-cascader
-            v-model="dataForm.deptmentIds"
-            :options="deptData1"
-            :props="{ checkStrictly: true }"
-            collapse-tags>
-          </el-cascader>
-        </el-form-item>
+<!--        <el-form-item label="题库使用范围" >-->
+<!--          <el-cascader-->
+<!--            v-model="dataForm.deptmentIds"-->
+<!--            :options="deptData1"-->
+<!--            :props="{ checkStrictly: true }"-->
+<!--            collapse-tags>-->
+<!--          </el-cascader>-->
+<!--        </el-form-item>-->
         <el-form-item label="备注" prop="remark">
           <el-input v-model="dataForm.remark" type="textarea" :rows="2" auto-complete="off"></el-input>
         </el-form-item>
@@ -331,7 +330,7 @@
           completionType:[],
           subjectType:[],
           assessmentTarget:[],
-          deptmentIds:[],
+          // deptmentIds:[],
           isReviewer:false,
           textbook:'',
           topic:[''],
@@ -705,7 +704,7 @@
           this.courseData = res.bean.data;
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data;
@@ -771,7 +770,7 @@
       },
     },
     mounted(){
-      this.findDeptTree();
+      // this.findDeptTree();
       this.findCourse();
       this.initColumns();
     }

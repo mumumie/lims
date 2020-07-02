@@ -2,7 +2,7 @@
     <el-row :gutter="10">
       <el-col :span="3">
         <el-input v-model="nickname" placeholder="姓名" @change="findUser"></el-input>
-        <el-select v-model="deptId" placeholder="部门名称" @change="findDeptUser"
+        <el-select v-model="deptId" placeholder="用户组名称" @change="findDeptUser"
                    filterable>
           <el-option
             v-for="item in deptOption"
@@ -34,8 +34,8 @@
       return {
         selected1: this.value,
         nickname: '',//成员名字
-        deptId: '',//部门id
-        deptOption: [],//单个部门选项
+        deptId: '',//用户组id
+        deptOption: [],//单个用户组选项
         unSelectedUser: [],//穿梭框数据-待选用户
       }
     },

@@ -65,15 +65,15 @@
             <el-option :label="item.value" :value="item.value" v-for="(item,index) in typeData" :key="index"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="开放比例" prop="timeLimit">
-          <el-select v-model="dataForm.timeLimit" placeholder="请选择试卷名称" >
-            <el-option label="20%" :value="20" ></el-option>
-            <el-option label="40%" :value="40" ></el-option>
-            <el-option label="60%" :value="60" ></el-option>
-            <el-option label="80%" :value="80" ></el-option>
-            <el-option label="100%" :value="100" ></el-option>
-          </el-select>
-        </el-form-item>
+<!--        <el-form-item label="开放比例" prop="timeLimit">-->
+<!--          <el-select v-model="dataForm.timeLimit" placeholder="请选择试卷名称" >-->
+<!--            <el-option label="20%" :value="20" ></el-option>-->
+<!--            <el-option label="40%" :value="40" ></el-option>-->
+<!--            <el-option label="60%" :value="60" ></el-option>-->
+<!--            <el-option label="80%" :value="80" ></el-option>-->
+<!--            <el-option label="100%" :value="100" ></el-option>-->
+<!--          </el-select>-->
+<!--        </el-form-item>-->
 <!--        <el-form-item label="时间限制" prop="timeLimit">-->
 <!--          <el-input v-model="dataForm.timeLimit" auto-complete="off" placeholder="请选择课程"></el-input>-->
 <!--        </el-form-item>-->
@@ -287,20 +287,28 @@
       submitForm: function () {
         this.$refs.dataForm.validate((valid) => {
           if (valid) {
-            this.$confirm('确认提交吗？', '提示', {}).then(() => {
-              this.editLoading = true;
-              let params = Object.assign({}, this.dataForm);
-              this.$api.practice.save(params).then((res) => {
-                this.editLoading = false
-                this.dialogVisible = false
-                this.$refs['dataForm'].resetFields()
-                this.findPage(null)
+            let condition = {
+              questBankId:this.dataForm.questBankId,
+              chapter$in:this.dataForm.chapter,
+              type$in:this.dataForm.questType,
+              status:1
+            }
+            queryBean("Quest",condition,{pageNum:0,pageSize:1}).then(res =>{
+              this.$confirm(`该练习包含题目${res.bean.total}道，是否创建？`, '提示', {}).then(() => {
+                this.editLoading = true;
+                let params = Object.assign({}, this.dataForm);
+                this.$api.practice.save(params).then((res) => {
+                  this.editLoading = false
+                  this.dialogVisible = false
+                  this.$refs['dataForm'].resetFields()
+                  this.findPage(null)
+                })
               })
             })
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data;

@@ -129,8 +129,8 @@
             if(!answerIndex){
               this.questCount ={
                 'all':res.bean.total,
-                'true':res.bean.data.filter(v => v.quest.status === 1).length,
-                'false':res.bean.data.filter(v => v.quest.status === -1).length,
+                'true':res.bean.data.filter(v => v.status === 1).length,
+                'false':res.bean.data.filter(v => v.status === 2).length,
               }
             }
             this.practiceData  = res.bean.data.map(item =>{

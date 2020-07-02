@@ -3,14 +3,14 @@
     <!-- 标签页 -->
     <div class="tab-container">
       <el-tabs class="tabs" :class="$store.state.app.collapse?'position-collapse-left':'position-left'"
-        v-model="mainTabsActiveName" :closable="true" type="card"
+        v-model="mainTabsActiveName" :closable="mainTabs.length >= 2" type="card"
         @tab-click="selectedTabHandle" @tab-remove="removeTabHandle">
         <el-dropdown class="tabs-tools" :show-timeout="0" trigger="hover">
           <div style="font-size:20px;width:50px;text-align: center;"><i class="el-icon-arrow-down"></i></div>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item @click.native="tabsCloseCurrentHandle">关闭当前标签</el-dropdown-item>
             <el-dropdown-item @click.native="tabsCloseOtherHandle">关闭其它标签</el-dropdown-item>
-            <el-dropdown-item @click.native="tabsCloseAllHandle">关闭全部标签</el-dropdown-item>
+<!--            <el-dropdown-item @click.native="tabsCloseAllHandle">关闭全部标签</el-dropdown-item>-->
             <el-dropdown-item @click.native="tabsRefreshCurrentHandle">刷新当前标签</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -51,6 +51,10 @@ export default {
     mainTabsActiveName: {
       get () { return this.$store.state.tab.mainTabsActiveName },
       set (val) { this.$store.commit('updateMainTabsActiveName', val) }
+    },
+    navMainTree: {
+      get () { return this.$store.state.menu.navMainTree },
+      set (val) { this.$store.commit('setMainNavTree', val) }
     }
   },
   methods: {
@@ -78,12 +82,19 @@ export default {
           })
         }
       } else {
-        this.$router.push("/")
+        this.$router.push({name: this.navMainTree[0].children[0].name})
       }
     },
     // tabs, 关闭当前
     tabsCloseCurrentHandle () {
-      this.removeTabHandle(this.mainTabsActiveName)
+      if (this.mainTabs.length > 1) {
+        this.removeTabHandle(this.mainTabsActiveName)
+      } else {
+        this.$message({
+          type: 'warning',
+          message: '仅剩当前页，无法删除！'
+        })
+      }
     },
     // tabs, 关闭其它
     tabsCloseOtherHandle () {
@@ -92,15 +103,16 @@ export default {
     // tabs, 关闭全部
     tabsCloseAllHandle () {
       this.mainTabs = []
-      this.$router.push("/")
+      this.$router.push({name: this.navMainTree[0].children[0].name})
     },
     // tabs, 刷新当前
     tabsRefreshCurrentHandle () {
-      var tempTabName = this.mainTabsActiveName
-      this.removeTabHandle(tempTabName)
-      this.$nextTick(() => {
-        this.$router.push({ name: tempTabName })
-      })
+      // var tempTabName = this.mainTabsActiveName
+      // this.removeTabHandle(tempTabName)
+      // this.$nextTick(() => {
+      //   this.$router.push({ name: tempTabName })
+      // })
+      this.$router.go(0)
     },
     newWindow(tab){
       let routeUrl = '';

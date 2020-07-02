@@ -301,24 +301,32 @@
           openType : 2,
           id:0
         };
-        this.$api.practice.save(postData).then(res =>{
-          if (res.retCode === 0) {
-            this.$toast({
-              message: '开始测试',
-              iconClass: 'el-icon-success'
-            });
-            let row = res.bean;
-            let questType = res.bean.questType.toString();
-            let chapter = res.bean.chapter.toString();
-            this.$router.push({path:"/wap/selfPractice",query:{questType:questType,chapter:chapter,questBankId:row.questBankId,name:row.name,id:row.id}})
-          }
+        let condition = {
+          questBankId:this.formData.questBankId,
+          chapter$in:chapter,
+          type$in:questType,
+          status:1
+        }
+        queryBean("Quest",condition,{pageNum:0,pageSize:1}).then( data => {
+          this.$messagebox.confirm(`该练习包含题目${data.bean.total}道，是否创建？`).then(action => {
+            this.$api.practice.save(postData).then(res =>{
+              if (res.retCode === 0) {
+                this.$toast({
+                  message: '开始测试',
+                  iconClass: 'el-icon-success'
+                });
+                let row = res.bean;
+                let questType = res.bean.questType.toString();
+                let chapter = res.bean.chapter.toString();
+                this.$router.push({path:"/wap/selfPractice",query:{questType:questType,chapter:chapter,questBankId:row.questBankId,name:row.name,id:row.id}})
+              }
+            })
+          }).catch(err =>{})
         })
-
       }
     },
     created() {
       this.getPractice();
-
     }
   }
 </script>

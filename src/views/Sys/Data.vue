@@ -249,7 +249,7 @@
           /*{prop:"id", label:"ID", minWidth:50},*/
           // {prop:"name", label:"账号", minWidth:120},
           // {prop:"nickname", label:"昵称", minWidth:120},
-          // {prop:"deptName", label:"部门", minWidth:120},
+          // {prop:"deptName", label:"用户组", minWidth:120},
           // {prop:"roleNames", label:"角色", minWidth:100},
           // {prop:"email", label:"邮箱", minWidth:120},
           // {prop:"phone", label:"手机", minWidth:100},

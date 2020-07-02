@@ -1,5 +1,7 @@
 <template>
   <div class="page-container">
+    <tip :value="
+    ['创建和管理课程，是教师选课、学生选课及题库的基础，比如创建课程-生理学。只有创建了课程，才能进行选课及题库的创建']" />
     <!--工具栏-->
     <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
       <el-form :inline="true" :model="filters" :size="size">
@@ -394,7 +396,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data

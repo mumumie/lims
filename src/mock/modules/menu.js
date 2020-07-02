@@ -1,4 +1,4 @@
-/* 
+/*
  * 菜单管理模块
  */
 
@@ -47,7 +47,7 @@ export function findNavTree() {
         "lastUpdateBy": null,
         "lastUpdateTime": null,
         "parentId": 1,
-        "name": "部门管理",
+        "name": "用户组管理",
         "url": "/sys/dept",
         "perms": null,
         "type": 1,
@@ -418,7 +418,7 @@ export function findMenuTree() {
         "lastUpdateBy": null,
         "lastUpdateTime": null,
         "parentId": 1,
-        "name": "部门管理",
+        "name": "用户组管理",
         "url": "/sys/dept",
         "perms": null,
         "type": 1,
@@ -441,7 +441,7 @@ export function findMenuTree() {
           "icon": null,
           "orderNum": 0,
           "delFlag": 0,
-          "parentName": "部门管理",
+          "parentName": "用户组管理",
           "level": 2,
           "children": []
         }, {
@@ -458,7 +458,7 @@ export function findMenuTree() {
           "icon": null,
           "orderNum": 0,
           "delFlag": 0,
-          "parentName": "部门管理",
+          "parentName": "用户组管理",
           "level": 2,
           "children": []
         }, {
@@ -475,7 +475,7 @@ export function findMenuTree() {
           "icon": null,
           "orderNum": 0,
           "delFlag": 0,
-          "parentName": "部门管理",
+          "parentName": "用户组管理",
           "level": 2,
           "children": []
         }, {
@@ -492,7 +492,7 @@ export function findMenuTree() {
           "icon": null,
           "orderNum": 0,
           "delFlag": 0,
-          "parentName": "部门管理",
+          "parentName": "用户组管理",
           "level": 2,
           "children": []
         }]

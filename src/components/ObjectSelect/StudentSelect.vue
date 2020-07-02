@@ -33,7 +33,7 @@
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
-        label="所属部门"
+        label="所属用户组"
         prop="deptment.name"
         align="center">
       </el-table-column>

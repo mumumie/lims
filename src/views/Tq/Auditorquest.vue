@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div v-if="!isEdit">
-      <tip :value="['展示待审核试题，通过后进入已审核试题，若删除则进入回收站']" />
+      <tip :value="['展示待审核试题，通过后进入已审核试题，若删除则进入回收站。显示待审核试题，审核人可以选择通过审核或退回试题。退回试题需说明原因，并返回到我的试题。']" />
       <!--工具栏-->
       <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
         <el-form :inline="true" :model="filters" :size="size">

@@ -30,7 +30,7 @@
           <kt-button icon="fa fa-trash" :label="$t('action.delete')" :perms="permsDelete" :size="size" type="danger"  @click="handleDelete(scope.$index, scope.row)" v-if="showBtnDelete"/>
           <kt-button class="btns" label="预览" :perms="permsDetail" :size="size" @click="handleDetail(scope.$index, scope.row)" v-if="showBtnDetail"/>
           <kt-button class="btns" :label="statusFilter(scope.row)" :perms="permsEdit" :size="size" @click="handleApprove(scope.$index, scope.row)" v-if="showBtnApprove"/>
-          <kt-button class="btns" label="退回试题" :perms="permsEdit" :size="size" @click="handleExam(scope.$index, scope.row)" v-if="showBtnExam"/>
+          <kt-button class="btns" :label="scope.row.status === 0 ? '未提交' : (scope.row.status === 1 ? '批阅' : '查看结果')" :perms="permsEdit" :size="size" @click="handleExam(scope.$index, scope.row)" v-if="showBtnExam"/>
           <kt-button class="btns" label="还原试题" :perms="permsEdit" :size="size" @click="handlePass(scope.$index, scope.row)" v-if="showBtnPass"/>
           <kt-button  class="btns" :label="customLabel" :perms="permsEdit" :size="size" @click="handleCustom(scope.$index, scope.row)" v-if="showCustom"/>
         </template>
@@ -248,23 +248,22 @@ export default {
       if(val===0){
         return '未提交'
       }else if(val===1){
-        return '待审批'
+        return '待批阅'
       }else{
         return '已批阅'
       }
     },
     //过滤状态字段
     statusFilter:function(row, column, cellValue, index) {
-      if (row.status === -1) {
-        return '编辑';
-      } else if (row.status === 0) {
-        return '编辑';
-      } else if (row.status === 1) {
-        return '批阅';
-      } else if (row.status === 2) {
-        return '批阅';
+      const date = new Date().getTime()
+      if (row.validTime[0] > date) {
+        return '等待考试';
+      } else if (row.validTime[0] <= date && date <= row.validTime[1]) {
+        return '进入考试';
+      } else if (row.validTime[1] < date) {
+        return '查看成绩';
       } else {
-        return '-';
+        return ' - ';
       }
     },
     isStatusExam:function(row){

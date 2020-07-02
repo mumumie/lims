@@ -283,7 +283,7 @@
           }
         })
       },
-      // 获取部门列表
+      // 获取用户组列表
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           this.deptData = res.bean.data;
@@ -388,7 +388,7 @@
                 arr['name'] =  item['账号'];
                 arr['nickname'] =  item['昵称'];
                 arr['passwd'] =  String(item['密码']);
-                arr['deptmentId'] =  item['部门id'];
+                arr['deptmentId'] =  item['用户组id'];
                 arr['email'] =  item['邮箱'];
                 arr['phone'] =  item['手机'];
                 return arr;
@@ -439,7 +439,7 @@
             type: 'warning'
           }).then(() => {
             import('@/vendor/Export2Excel').then(excel => {
-              const tHeader = ['账号', '昵称', '部门', '角色', '邮箱', '手机'] // 表头
+              const tHeader = ['账号', '昵称', '用户组', '角色', '邮箱', '手机'] // 表头
               const filterVal = ['name', 'nickname', 'deptName', 'roleNames', 'email', 'phone'] // 需要导出的项目
               const list = data1 ;// 所有列表数据
               const data = this.formatJson(filterVal, list);

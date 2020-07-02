@@ -1,5 +1,5 @@
-/* 
- * 部门管理模块
+/*
+ * 用户组管理模块
  */
 
 // 保存
@@ -27,7 +27,7 @@ export function batchDelete() {
   }
 }
 export function findDeptTree(params) {
-  // 查询部门树
+  // 查询用户组树
   let findTreeData = {
     "code": 200,
     "msg": null,
@@ -38,8 +38,8 @@ export function findDeptTree(params) {
     let obj = {}
     obj.id   = i + 1
     obj.parentId   = 0
-    obj.name = '部门部门  ' + obj.id
-    obj.parentName = "顶级部门"
+    obj.name = '用户组用户组  ' + obj.id
+    obj.parentName = "顶级用户组"
     obj.children = []
     content.push(obj)
   }
@@ -50,7 +50,7 @@ export function findDeptTree(params) {
       obj.id = (i + 1) + "" + (j + 1)
       obj.parentId = parent.id
       obj.parentName = parent.name
-      obj.name = '部门部门  ' + (i + 1) + "-" + (j + 1)
+      obj.name = '用户组用户组  ' + (i + 1) + "-" + (j + 1)
       parent.children.push(obj)
     }
   }

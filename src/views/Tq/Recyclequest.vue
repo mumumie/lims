@@ -2,7 +2,7 @@
   <div class="page-container">
     <div v-if="!isEdit">
       <tip :value="
-    ['展示已删除试题，还原后进入我的试题']" />
+    ['显示已删除的试题，可以进行还原或彻底删除。']" />
       <!--工具栏-->
       <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
         <el-form :inline="true" :model="filters" :size="size">

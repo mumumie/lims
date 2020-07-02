@@ -13,6 +13,21 @@ export const post = (url, data) =>{
   })
 }
 
+export const queryCount = (typeName, condition) => {
+  let pipeline = {$group: {_id: null, count: {$sum: 1}}}
+  let postData = {
+    typeName: typeName,
+    condition: condition,
+    exCondition: {pipeline: JSON.stringify(pipeline)}
+  }
+  return axios({
+    baseUrl: baseUrl,
+    url: '/aggregate',
+    method: 'post',
+    data: postData,
+  })
+};
+
 export const aggregate = (typeName, groupField, condition) => {
   let pipeline = {$group: {_id: "$"+groupField, count: {$sum: 1}}}
   let postData = {
@@ -40,6 +55,23 @@ export const queryBean = (typeName, condition, pageInfo,exCondition) => {
   return axios({
     baseUrl: baseUrl,
     url: '/queryBean',
+    method: 'post',
+    data: postData,
+  })
+};
+
+export const nonauthQueryBean = (typeName, condition, pageInfo,exCondition) => {
+  let postData = {
+    typeName: typeName,
+    condition: condition,
+    exCondition:exCondition,
+    pagesize: pageInfo!=undefined && _.isEmpty(pageInfo.pageSize)?pageInfo.pageSize:undefined,
+    pageno: pageInfo!=undefined && _.isEmpty(pageInfo.pageNum)?pageInfo.pageNum-1:undefined,
+    sort: pageInfo!=undefined && pageInfo.sort!=undefined?pageInfo.sort:undefined
+  }
+  return axios({
+    baseUrl: baseUrl,
+    url: '/nonauth/queryBean',
     method: 'post',
     data: postData,
   })

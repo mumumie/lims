@@ -2,7 +2,7 @@
   <div class="page-container">
     <div v-if="!isEdit">
       <tip :value="
-    ['展示已审核和待提交试题，提交后进入待审核，若删除则进入回收站','管理员组可以查看到所有题库']" />
+    ['展示已审核和待提交试题，提交后进入待审核，若删除则进入回收站']" />
       <!--工具栏-->
       <div class="toolbar" style="float:left;padding-top:10px;padding-left:15px;">
         <el-form :inline="true" :model="filters" :size="size">
