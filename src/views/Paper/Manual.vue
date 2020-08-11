@@ -62,13 +62,21 @@
         </el-form-item>
       </div>
       <el-form-item label="试题列表">
-        <el-button icon="el-icon-circle-plus-outline" @click="addQuestId">题目选择器</el-button>
+        <div>
+          <el-button icon="el-icon-circle-plus-outline" @click="addQuestId">题目选择器</el-button>
+          <el-button icon="el-icon-delete" type="danger" @click="deleteQuestId">批量删除</el-button>
+        </div>
         <el-table
           :data="questList"
           size="mini"
           height="400px"
           border
+          @selection-change="handleSelectionChange"
           style="width: 100%;margin-top:20px;">
+          <el-table-column
+            type="selection"
+            width="45">
+          </el-table-column>
           <el-table-column
             header-align="center"
             prop="type"
@@ -130,7 +138,7 @@
         <el-table
           :data="scoreData"
           size="mini"
-          style="width: 500px"
+          style="width: 600px"
           border>
           <el-table-column
             align="center"
@@ -149,12 +157,17 @@
             prop="totalScore"
             label="题型总分">
           </el-table-column>
+          <el-table-column
+            align="center"
+            prop="percentage"
+            label="占总和比例">
+          </el-table-column>
         </el-table>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="previewPaper">预览试卷</el-button>
         <el-button type="primary" @click="submitManual(-1)">保存试卷</el-button>
-        <el-button type="primary" @click="submitManual(0)">提交试卷</el-button>
+        <el-button type="primary" @click="submitManual(0)">保存并发布</el-button>
       </el-form-item>
       <!--    详情展示弹框-->
       <el-dialog
@@ -336,12 +349,12 @@
         chapterData: [],
         typeData: [],
         scoreData: [],
-        topicData:[]
+        topicData:[],
+        selectList: []
       }
     },
     watch: {
       totalScore: function (val) {
-        console.log(this.formData.deptmentIds)
         this.changeScore(this.questList);
       },
       totalCount: function (val) {
@@ -357,6 +370,9 @@
       },
     },
     methods: {
+      handleSelectionChange(val) {
+        this.selectList = val.map(v => v.id);
+      },
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           let options=function(option){
@@ -474,6 +490,32 @@
         //   this.$refs.questId.getTableData();
         // })
       },
+      // 批量删除题目
+      deleteQuestId() {
+        if (this.selectList.length === 0) {
+          this.$message.error('请选择删除项！')
+          return
+        }
+        this.$confirm('此操作将永久删除, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.selectList.map(id => {
+            const questList = this.questList.filter(v => v.id !== id)
+            this.questList = questList
+          });
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+      },
       changeQuest: function (val) {
         val = val.filter(item => {
           let ids = this.questList.map(v => v.id)
@@ -497,6 +539,7 @@
           scoreData[index].count = questList.filter(type => type.type === item.value).length;
           scoreData[index].children = questList.filter(type => type.type === item.value);
           scoreData[index].totalScore = scoreData[index].children.reduce((prev, next) => (prev + next.score), 0);
+          scoreData[index].percentage = Math.round((scoreData[index].totalScore / this.totalScore) * 1000) / 10 + '%'
           if (scoreData[index].children.length > 0) {
             newQuestList = [...newQuestList, ...scoreData[index].children]
           }

@@ -79,13 +79,12 @@
             prop="zz"
             label="随机抽题量">
             <template slot-scope="scope">
-              <el-input v-model.number="scope.row.typeCount" :disabled="scope.row.typeCount==0"
-              type="number" min="1" max="30"></el-input>
+              <el-input v-model.number="scope.row.typeCount" @input="limitChange(scope.row, 'typeCount')" type="number" min="1" max="30"></el-input>
             </template>
           </el-table-column>
           <el-table-column label="分值">
             <template slot-scope="scope">
-              <el-input v-model.number="scope.row.score" type="number" min="1" max="30"></el-input>
+              <el-input v-model.number="scope.row.score" @input="limitChange(scope.row, 'score')" type="number" min="1" max="30"></el-input>
             </template>
           </el-table-column>
         </el-table>
@@ -169,15 +168,33 @@
 
     },
     methods: {
+      limitChange(row, key) {
+        console.log(row[key]);
+        if (row[key] > 30) {
+          row[key] = 30
+        } else if (row[key] <= 0) {
+          row[key] = 1
+        }
+      },
       onSubmit() {
         let condition = this.baseCondition;
         condition["chapter$in"] = this.chapterValue;
         if(this.questTypeValue.length === 0){
-          delete condition["type$in"]
+          this.$message.error('请选择题目类型！')
+          return
         }else{
           condition["type$in"] = this.questTypeValue;
         }
         let typeRandom = {};
+        console.log(this.questTypeData);
+        if (this.questTypeData.some(v => !v.typeCount)) {
+          this.$message.error('选中题型数量不能为空或0！')
+          return
+        }
+        if (this.questTypeData.some(v => !v.score)) {
+          this.$message.error('选中题型分值不能为空或0！')
+          return
+        }
         this.questTypeData.forEach(v=>{
           typeRandom[v['name']] = v['typeCount']
         })
@@ -190,7 +207,7 @@
           const questData = res.bean;
           questData.map(v => {
             const row = this.questTypeData.filter(item => item.name === v.type)[0]
-            console.log(row);
+            // console.log(row);
             if (row) {
               v.score = row.score
             }
@@ -204,6 +221,7 @@
       chapterSelect(){
         this.chapterTypeVisible = true;
         delete this.baseCondition["chapter$in"]
+        delete this.baseCondition["type$in"]
         this.refreshChapter().then(res =>{
           this.toggleSelection()
         })
@@ -249,11 +267,11 @@
         this.questTypeValue = list;
 
         this.questTypeData.forEach((v, i) => {
-          this.$set(this.questTypeData[i], 'score', 1)
+          // this.$set(this.questTypeData[i], 'score', 1)
           if(this.questTypeValue.includes(v.name)){
             if (v.typeCount==0) v.typeCount = v.value > 30 ? 30 : v.value
           }else {
-            v.typeCount = 0
+            // v.typeCount = 0
           }
         })
       },

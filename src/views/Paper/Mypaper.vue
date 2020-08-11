@@ -102,7 +102,7 @@
         <div slot="footer" class="dialog-footer">
           <el-button :size="size" @click.native="editVisible = false">{{$t('action.cancel')}}</el-button>
           <el-button :size="size" type="primary" @click.native="submitForm(-1)" :loading="editLoading" v-if="dataForm.status === -1">保存</el-button>
-          <el-button :size="size" type="primary" @click.native="submitForm(0)" :loading="editLoading">{{$t('action.submit')}}</el-button>
+          <el-button :size="size" type="primary" @click.native="submitForm(0)" :loading="editLoading">保存并发布</el-button>
         </div>
       </el-dialog>
       <!--    试卷展示弹框-->
@@ -426,7 +426,6 @@
         if(data !== null) {
           pageRequest = data.pageRequest
         }
-        pageRequest.condition['status$ne'] = 3;
         if(this.filters.questBankId){
           pageRequest.condition.questBankId = this.filters.questBankId;
         }else{
