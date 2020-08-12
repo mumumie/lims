@@ -47,10 +47,10 @@ export const queryBean = (typeName, condition, pageInfo,exCondition) => {
   let postData = {
     typeName: typeName,
     condition: condition,
-    exCondition:exCondition,
-    pagesize: pageInfo!=undefined && _.isEmpty(pageInfo.pageSize)?pageInfo.pageSize:undefined,
-    pageno: pageInfo!=undefined && _.isEmpty(pageInfo.pageNum)?pageInfo.pageNum-1:undefined,
-    sort: pageInfo!=undefined && pageInfo.sort!=undefined?pageInfo.sort:undefined
+    exCondition: exCondition,
+    pagesize: pageInfo!= undefined && _.isEmpty(pageInfo.pageSize)? pageInfo.pageSize:undefined,
+    pageno: pageInfo!= undefined && _.isEmpty(pageInfo.pageNum)? pageInfo.pageNum-1:undefined,
+    sort: pageInfo!= undefined && pageInfo.sort!= undefined? pageInfo.sort:undefined
   }
   return axios({
     baseUrl: baseUrl,

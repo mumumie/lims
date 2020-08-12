@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="box">
     <el-row type="flex" class="row-bg" justify="center">
       <div class="logo_pic">
         <img src="/static/images/logo.png" alt="">
@@ -100,5 +100,5 @@
 </script>
 
 <style scoped>
-
+  .box{padding-left: 0.2rem;padding-right: 0.2rem;}
 </style>

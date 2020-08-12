@@ -46,7 +46,6 @@ Vue.prototype._ = _;
 
 // 注册全局组件
 Vue.component("tip", Tip);
-
 let vue = new Vue({
   el: '#app',
   i18n,

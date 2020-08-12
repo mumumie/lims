@@ -16,21 +16,55 @@
       <div class="swiper-pagination"  slot="pagination"></div>
     </swiper>
     <div class="practice_list">
-      <div class="practice_list_box" @click="clickPractice(item)" v-for="item in practiceData" :key="item.id">
-        <div class="list_img">
-          <img src="../../../static/images/user.png" alt="">
-        </div>
-        <div class="list_content">
-          <div class="list_content_box">
-            <span>{{item.name}}</span>
-            <p>{{item.questType.toString()}}</p>
+      <mt-navbar v-model="selected">
+        <mt-tab-item id="1">考试</mt-tab-item>
+        <mt-tab-item id="2">练习</mt-tab-item>
+      </mt-navbar>
+
+      <!-- tab-container -->
+      <mt-tab-container v-model="selected">
+        <mt-tab-container-item id="1">
+          <div class="practice_list_box" @click="clickExam(item)" v-for="item in examData" :key="item.id">
+            <div class="list_img">
+              <img src="../../../static/images/user.png" alt="">
+            </div>
+            <div class="list_content">
+              <div class="list_content_box">
+                <span>{{item.name}}</span>
+                <p>{{examStatus(item.status)}}</p>
+              </div>
+              <span>{{item.date + ' ' + item.startTime + '~' + item.endTime}}</span>
+            </div>
+            <div class="list_right">
+              <i class="el-icon-arrow-right"></i>
+            </div>
           </div>
-          <span>{{dateFormat(item.insertDt)}}</span>
-        </div>
-        <div class="list_right">
-          <i class="el-icon-arrow-right"></i>
-        </div>
-      </div>
+          <div style="padding:0.2rem;">
+            <mt-button type="default" size="small" plain style="width:100%;" @click="getExam(++examPages)" v-if="examData.length < examTotal">查看更多>></mt-button>
+          </div>
+        </mt-tab-container-item>
+        <mt-tab-container-item id="2">
+          <div class="practice_list_box" @click="clickPractice(item)" v-for="item in practiceData" :key="item.id">
+            <div class="list_img">
+              <img src="../../../static/images/user.png" alt="">
+            </div>
+            <div class="list_content">
+              <div class="list_content_box">
+                <span>{{item.name}}</span>
+                <p>{{item.questType.toString()}}</p>
+              </div>
+              <span>{{dateFormat(item.insertDt)}}</span>
+            </div>
+            <div class="list_right">
+              <i class="el-icon-arrow-right"></i>
+            </div>
+          </div>
+          <div style="padding:0.2rem;">
+            <mt-button type="default" size="small" plain style="width:100%;" @click="getPractice(++practicePages)" v-if="practiceData.length < practiceTotal">查看更多>></mt-button>
+          </div>
+        </mt-tab-container-item>
+      </mt-tab-container>
+
     </div>
 <!--    底部tabbar-->
     <div class="tabbar_box">
@@ -39,6 +73,12 @@
           <i class="el-icon-s-shop"></i>
         </p>
         首页
+      </div>
+      <div @click="toPath('exam')">
+        <p>
+          <i class="el-icon-s-opportunity"></i>
+        </p>
+        考试
       </div>
       <div @click="toPath('practice')">
         <p>
@@ -71,6 +111,9 @@
     data(){
       return{
         practiceData: [],
+        examData: [],
+        practiceTotal: 0,
+        examTotal: 0,
         swiperOption: {
           loop:true,
           autoplay: {
@@ -84,13 +127,57 @@
             clickable: true,
           },
         },
+        selected: '1',
+        examPages: 1,
+        practicePages: 1,
       }
     },
+    created() {
+      this.getExam();
+      this.getPractice();
+    },
     methods: {
-      getPractice(){
-        queryBean("Practice",{openType : 1}).then(res => {
-          this.practiceData  =res.bean.data
+      getPractice(page = 1){
+        const pageRequest = {
+          pageNum: page,
+          pageSize: 10,
+          sort: {
+            insertDt: -1,
+          },
+          condition: {
+            openType : 1
+          }
+        };
+        queryBean("Practice", pageRequest.condition, pageRequest).then(res => {
+          this.practiceData = this.practiceData.concat(res.bean.data);
+          this.practiceTotal = res.bean.total
         })
+      },
+      getExam(page = 1) {
+        const pageRequest = {
+          pageNum: page,
+          pageSize: 10,
+          sort: {
+            insertDt: -1,
+          },
+          condition: {
+            status$ne: -1
+          }
+        };
+        queryBean("Paper", pageRequest.condition, pageRequest).then(res => {
+          this.examData = this.examData.concat(res.bean.data);
+          this.examTotal = res.bean.total
+        })
+      },
+      clickExam(row) {
+        if (row.status === 1) {
+          this.$router.push({name: 'exam-detail', params: {id: row.id}})
+        } else {
+          this.$toast({
+            message: '考试' + this.examStatus(row.status),
+            iconClass: 'el-icon-circle-close'
+          });
+        }
       },
       clickPractice(row) {
         let questType = row.questType.toString();
@@ -104,9 +191,18 @@
       dateFormat: function (time){
         return formatData(time)
       },
-    },
-    created() {
-      this.getPractice();
+      examStatus(val) {
+        switch(val) {
+          case 0:
+            return '未开始'
+          case 1:
+            return '进行中'
+          case 2:
+            return '已结束'
+          default:
+            return '-'
+        }
+      }
     }
   }
 </script>
@@ -174,5 +270,11 @@
     margin-left:auto;
     line-height: 1.4rem;
     font-size: 0.5rem;
+  }
+  .mint-navbar{
+    padding:0 0.2rem;
+  }
+  .mint-tab-container{
+    margin-top:0.1rem;
   }
 </style>

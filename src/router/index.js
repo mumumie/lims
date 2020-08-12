@@ -5,7 +5,7 @@ import Generator from '@/views/Generator/Generator'
 import api from '@/http/api'
 import store from '@/store'
 import { getIFramePath, getIFrameUrl } from '@/utils/iframe'
-
+import wapRouter from "./wapRouter";
 const NotFound = () => import('@/views/Error/404');
 const Intro = () => import('@/views/Intro/Intro');
 const Home = () => import('@/views/Home');
@@ -13,9 +13,6 @@ const Login = () => import('@/views/Login');
 const QuestFilter = () => import('@/components/ObjectSelect/QuestFilter');
 const Test = () => import('@/views/Test/Index');
 
-const Wap = () => import('@/views/Wap/Index');
-const DoPractice = () => import('@/views/Wap/DoPractice');
-const WapLogin = () => import('@/views/Wap/Login');
 Vue.use(Router)
 
 const router = new Router({
@@ -62,54 +59,8 @@ const router = new Router({
       name: 'test',
       component: QuestFilter
     },
-    {
-      path: '/wap',
-      name: 'wap',
-      component: () => import('@/views/Wap/Home'),
-      redirect: '/wap/home',
-      children:[
-        {
-          path:'practice',
-          name:'practice',
-          component:() => import('@/views/Wap/Practice')
-        },
-        {
-          path: 'home',
-          name: 'home',
-          component: Wap
-        },
-        {
-          path: 'doPractice',
-          name: 'doPractice',
-          component: DoPractice
-        },
-        {
-          path: 'login',
-          name: 'wapLogin',
-          component: WapLogin
-        },
-        {
-          path:'my',
-          name:'my',
-          component:() => import('@/views/Wap/My')
-        },
-        {
-          path:'selfPractice',
-          name:'selfPractice',
-          component:() => import('@/views/Wap/SelfPractice')
-        },
-        {
-          path:'selfHistory',
-          name:'selfHistory',
-          component:() => import('@/views/Wap/SelfHistory')
-        },
-        {
-          path:'selfPracticeDetail',
-          name:'selfPracticeDetail',
-          component:() => import('@/views/Wap/SelfPracticeDetail')
-        },
-      ]
-    },
+    // 移动端路由
+    wapRouter
 
   ]
 })

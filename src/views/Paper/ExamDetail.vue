@@ -219,7 +219,7 @@
             NotAnswer.push(key);
           }
           const quest = this.questList.filter(v => v.id === key)[0]
-          console.log(quest);
+          // console.log(quest);
           if (quest.baseType === 1) {
             let score = 0
             if (quest.optionAnswer.toString() === params[key].toString()) {
@@ -316,7 +316,7 @@
         this.formData[val.id] = val.content;
       },
       getExamPaper:function(data) {
-        Promise.all([queryBean('Paper', {id: this.$route.query.id}),queryBean('PaperQuest', data)]).then(res => {
+        Promise.all([queryBean('Paper', {id: this.$route.query.id}), queryBean('PaperQuest', data)]).then(res => {
           this.examInfo = res[0].bean.data[0];
           let questBankData = res[0].bean.data[0].questBank;
           let selectType = [
