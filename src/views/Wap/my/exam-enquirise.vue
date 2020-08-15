@@ -1,24 +1,25 @@
 <template>
   <div>
-    <mt-header title="自测历史" fixed >
+    <mt-header title="考试查询" fixed >
       <router-link to="/wap/my" slot="left">
         <mt-button icon="back">返回</mt-button>
       </router-link>
     </mt-header>
-    <div class="practice_list" v-if="practiceData.length > 0">
-      <div class="practice_list_box" @click="clickPractice(item)" v-for="item in practiceData" :key="item.id">
+    <div class="practice_list" v-if="practiceData.length> 0">
+      <div class="practice_list_box" @click="toExamResult(item)" v-for="item in practiceData" :key="item.id">
         <div class="list_img">
           <img src="../../../../static/images/user.png" alt="">
         </div>
         <div class="list_content">
           <div class="list_content_box">
             <span>{{item.name}}</span>
-            <p>{{item.questType.toString()}}</p>
+            <p>{{examStatus(item.status)}}</p>
           </div>
-          <span>{{dateFormat(item.insertDt)}}</span>
+          <span>{{item.date + ' ' + item.startTime + '~' + item.endTime}}</span>
         </div>
         <div class="list_right">
-          {{item.status === 0 ? '继续' : '查看'}}<i class="el-icon-arrow-right"></i>
+          查看
+          <i class="el-icon-arrow-right"></i>
         </div>
       </div>
     </div>
@@ -32,48 +33,55 @@
 </template>
 
 <script>
-  import { queryBean } from "@/http/base";
-  import { format, formatData } from "@/utils/datetime"
+  import {queryBean} from "../../../http/base";
+  import { format,formatData } from "@/utils/datetime"
   export default {
-    name:'SelfHistory',
+    name:'exam-enquirise',
     data(){
       return{
         practiceData: [],
       }
     },
+    created() {
+      this.getExam();
+    },
     methods: {
-      getPractice(){
-        let postData = {
-          openType : 2,
-          userid: sessionStorage.getItem('userid')
-        }
+      getExam(page = 1) {
+        const pageRequest = {
+          pageNum: 0,
+          pageSize: 0,
+          sort: {
+            insertDt: -1,
+          },
+          condition: {
+            status: 2
+          }
+        };
         let loadding = this.$toast({
           message: '数据加载中...',
           iconClass: 'el-icon-loading'
         });
-        queryBean("Practice",postData).then(res => {
-          this.practiceData  =res.bean.data
-        }).finally(() => {
+        queryBean("Paper", pageRequest.condition, pageRequest).then(res => {
+          this.practiceData = res.bean.data.filter(v => v.paperResult !== null);
+        }).catch(() => {}).finally(() => {
           loadding.close();
         })
       },
-      clickPractice(row) {
-        let questType = row.questType.toString();
-        let chapter = row.chapter.toString();
-        if(row.status === 0){
-          this.$router.push({path:"/wap/selfPractice",query:{questType:questType,chapter:chapter,questBankId:row.questBankId,name:row.name,id:row.id}})
-        }else{
-          this.$router.push({path:"/wap/selfPracticeDetail",query:{questType:questType,chapter:chapter,questBankId:row.questBankId,name:row.name,id:row.id}})
+      toExamResult(row) {
+        this.$router.push({ name: 'exam-result', params: { id: row.id }})
+      },
+      examStatus (val) {
+        switch(val) {
+          case 0:
+            return '未开始';
+          case 1:
+            return '进行中';
+          case 2:
+            return '已结束';
+          default:
+            return '-'
         }
-
-      },
-      // 时间格式化
-      dateFormat: function (time){
-        return formatData(time)
-      },
-    },
-    created() {
-      this.getPractice();
+      }
     }
   }
 </script>

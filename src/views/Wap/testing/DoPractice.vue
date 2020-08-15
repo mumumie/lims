@@ -9,7 +9,7 @@
     <div v-if="practiceData.length>0">
       <swiper :options="swiperOption" ref="mySwiper" class="swiperOption" >
         <!-- slides -->
-        <swiper-slide  style="min-height:500px;" v-for="previewData in practiceData" :key="previewData.id">
+        <swiper-slide  style="min-height:450px;" v-for="previewData in practiceData" :key="previewData.id">
           <div class="practice_box">
             <div class="practice_box_title">
               <div class="practice_type">
@@ -121,7 +121,8 @@
 </template>
 
 <script>
-  import {getBean,queryBean,addBean,updateBean} from "../../../http/base";
+  import 'swiper/dist/css/swiper.css'
+  import { getBean, queryBean, addBean, updateBean } from "@/http/base";
   import { swiper, swiperSlide } from 'vue-awesome-swiper'
   export default {
     components: {
@@ -155,7 +156,7 @@
     methods: {
       getPractice(){
         this.practiceLoading = true
-        let postData={
+        let postData = {
           userid:sessionStorage.getItem('userid'),
           practiceId:this.$route.query.id
         }
@@ -199,12 +200,12 @@
         })
 
       },
-      getSeletPractice(questType,chapter){
-        let postData={
+      getSeletPractice(questType, chapter){
+        let postData = {
           userid:sessionStorage.getItem('userid'),
           practiceId:this.$route.query.id,
         }
-        queryBean('PracticeResult',postData).then(res =>{
+        queryBean('PracticeResult', postData).then(res =>{
           if(res.retCode === 0){
             let idList = res.bean.data.map(item =>{
               return item.questId;
@@ -223,7 +224,7 @@
                 item.option.forEach((v,i) =>{
                   this.$set(item.oAnswer,i,false);
                 })
-                item.bAnswer=item.blankAnswer.map(v =>{
+                item.bAnswer = item.blankAnswer.map(v =>{
                   return ''
                 });
                 if(item.baseType === 5){
@@ -235,9 +236,7 @@
               })
             })
           }
-
         })
-
       },
       getAlreadyPractice(){
         let postData={
@@ -341,7 +340,7 @@
           }
         }
       },
-      checkResult(str){
+      checkResult(str) {
         if(str){
           let str1 = str.toLowerCase();
           let str2 = str1.replace(/[\“\”\’\‘\'\"\\\/\s+\b\f\n\r\t]/g, '');
@@ -350,7 +349,6 @@
         }else{
           return str
         }
-
       },
       answerChecked(row){
         if(row.baseType === 1){

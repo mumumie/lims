@@ -81,6 +81,8 @@
       }
     },
     mounted(){
+      document.oncontextmenu=new Function("event.returnValue=false");
+      document.onselectstart=new Function("event.returnValue=false");
       this.getExamPaper({paperId: this.$route.query.id});
       this.save = this.debounce(this.saveForm, 10000);
       this.timer = setInterval(() => {
@@ -395,7 +397,7 @@
         this.$store.commit('updateMainTabsActiveName', val);
         next()
       }else{
-        this.$alert('离开此页面，试卷自动保存?', '提示', {
+        this.$alert('试卷未提交，确定离开此页面?', '提示', {
           confirmButtonText: '确定',
           type: 'warning',
           callback: async (action) => {

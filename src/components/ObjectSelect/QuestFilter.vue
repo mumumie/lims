@@ -169,7 +169,6 @@
     },
     methods: {
       limitChange(row, key) {
-        console.log(row[key]);
         if (row[key] > 30) {
           row[key] = 30
         } else if (row[key] <= 0) {
@@ -186,7 +185,6 @@
           condition["type$in"] = this.questTypeValue;
         }
         let typeRandom = {};
-        console.log(this.questTypeData);
         if (this.questTypeData.some(v => !v.typeCount)) {
           this.$message.error('选中题型数量不能为空或0！')
           return

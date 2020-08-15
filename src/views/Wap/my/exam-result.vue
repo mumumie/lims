@@ -1,7 +1,7 @@
 <template>
   <div class="container">
-    <mt-header fixed title="自测详情" style="z-index: 20;">
-      <router-link to="/wap/selfHistory" slot="left">
+    <mt-header fixed :title="'《' + examInfo.name + '》考试结果'" style="z-index: 20;">
+      <router-link to="/wap/exam-enquirise" slot="left">
         <mt-button icon="back">返回</mt-button>
       </router-link>
     </mt-header>
@@ -19,7 +19,7 @@
         <p>错误试题</p>
       </div>
     </div>
-    <div v-if="practiceData.length>0">
+    <div v-if="practiceData.length > 0">
       <div class="practice_box" v-for="previewData in practiceData" :key="previewData.id">
         <div class="practice_box_title">
           <div class="practice_type">
@@ -89,7 +89,7 @@
       <div class="practice_icon">
         <i class="el-icon-s-order"></i>
       </div>
-      <p>暂无练习</p>
+      <p>暂无</p>
     </div>
   </div>
 
@@ -101,62 +101,89 @@
     data() {
       return {
         practiceData: [],
-        AnswerType:['A','B','C','D','E','F'],
-        type:['','单选题','多选题','判断题','填空题','问答题'],
-        difficulty:['','简单','中等','困难'],
-        answerIndex:0,
-        questBankShow:false,
-        questType:[],
-        chapter:[],
-        questCount:{
-          all:0,
-          true:0,
-          false:0,
+        initData: [],
+        AnswerType: ['A','B','C','D','E','F'],
+        type: ['','单选题','多选题','判断题','填空题','问答题'],
+        difficulty: ['','简单','中等','困难'],
+        answerIndex: 0,
+        questBankShow: false,
+        questType: [],
+        chapter: [],
+        questCount: {
+          all: 0,
+          true: 0,
+          false: 0,
         },
+        examInfo: {},
+        paperResultAnswerList: []
       }
     },
+    created() {
+      this.getExam();
+    },
     methods: {
-      getAlreadyPractice(answerIndex){
-        let postData={
-          userid:sessionStorage.getItem('userid'),
-          practiceId:this.$route.query.id
+      // 初始化试题
+      initExam(item) {
+        item.quest.score = item.score
+        const row = this.paperResultAnswerList.find(v => v.questId === item.quest.id)
+        if (item.quest.baseType === 1 || item.quest.baseType === 2) {
+          item.quest.oAnswer = []
+          if (row.optionAnswer.length > 0) {
+            item.quest.option.forEach((v, i) => {
+              this.$set(item.quest.oAnswer, i, row.optionAnswer.includes(i));
+            })
+          } else {
+            item.quest.option.forEach((v, i) =>{
+              this.$set(item.quest.oAnswer, i, false);
+            })
+          }
+        } else if (item.quest.baseType === 3) {
+          if (String(row.tfAnswer)) {
+            item.quest.tfAnswer = row.tfAnswer
+          } else {
+            item.quest.tfAnswer = '';
+          }
+        } else if (item.quest.baseType === 4) {
+          if (row.blankAnswer.length > 0) {
+            item.quest.bAnswer = row.blankAnswer;
+          } else {
+            item.quest.bAnswer = item.quest.blankAnswer.map(v => {
+              return ''
+            });
+          }
+        } else if (item.quest.baseType === 5) {
+          if (row.answerContent) {
+            item.quest.cAnswer = row.answerContent;
+          } else {
+            item.quest.cAnswer = '';
+          }
         }
-        if(answerIndex){
-          postData.status = answerIndex;
-        }
+        item.quest.answer = (row.score > 0);
+        item.quest.show = true;
+        return item.quest;
+      },
+      getExam() {
         let loadding = this.$toast({
           message: '数据加载中...',
           iconClass: 'el-icon-loading'
         });
-        queryBean('PracticeResult',postData).then(res =>{
-          if(res.retCode === 0){
-            if(!answerIndex){
-              this.questCount ={
-                'all':res.bean.total,
-                'true':res.bean.data.filter(v => v.status === 1).length,
-                'false':res.bean.data.filter(v => v.status === 2).length,
-              }
-            }
-            this.practiceData  = res.bean.data.map(item =>{
-              let obj = Object.assign({},item.quest)
-              obj.show = true;
-              obj.oAnswer = []
-              if(item.quest.baseType === 1 || item.quest.baseType === 2){
-                obj.oAnswer = item.quest.option.map(v =>{
-                  return false;
-                });
-                item.optionAnswer.forEach(v =>{
-                  obj.oAnswer[v] = true;
-                })
-              }
-              obj.tAnswer=item.tfAnswer;
-              obj.bAnswer=item.blankAnswer;
-              obj.answer = false;
-              return obj;
-            })
+        Promise.all([
+          queryBean('Paper', { id: this.$route.params.id }),
+          queryBean('PaperQuest', { paperId: this.$route.params.id })
+        ]).then(res => {
+          this.examInfo = res[0].bean.data[0];
+          this.paperResultAnswerList = res[0].bean.data[0].paperResult.paperResultAnswerList;
+          this.initData = res[1].bean.data.map(item => {
+            return this.initExam(item)
+          });
+          this.practiceData = this.initData
+          this.questCount ={
+            'all': this.initData.length,
+            'true': this.initData.filter(v => v.answer).length,
+            'false': this.initData.filter(v => !v.answer).length,
           }
         }).finally(() => {
-          loadding.close()
+          loadding.close();
         })
       },
       optionHandle(row,index){
@@ -297,12 +324,20 @@
       },
       selectHandle(index){
         this.answerIndex = index;
-        this.getAlreadyPractice(index);
+        switch(index) {
+          case 0:
+            this.practiceData = this.initData;
+            break;
+          case 1:
+            this.practiceData = this.initData.filter(v => v.answer);
+            break;
+          case 2:
+            this.practiceData = this.initData.filter(v => !v.answer);
+            break;
+          default:
+            this.practiceData = this.initData
+        }
       }
-
-    },
-    created() {
-      this.getAlreadyPractice(0);
 
     }
   }

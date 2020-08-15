@@ -97,7 +97,7 @@
 </template>
 
 <script>
-  import {queryBean} from "../../http/base";
+  import { addBean, queryBean } from "@/http/base";
   import * as router from "@babel/runtime-corejs2/helpers/AsyncGenerator";
   import 'swiper/dist/css/swiper.css'
   import { swiper, swiperSlide } from 'vue-awesome-swiper'
@@ -164,14 +164,54 @@
             status$ne: -1
           }
         };
+        let loadding = this.$toast({
+          message: '数据加载中...',
+          iconClass: 'el-icon-loading'
+        });
         queryBean("Paper", pageRequest.condition, pageRequest).then(res => {
           this.examData = this.examData.concat(res.bean.data);
           this.examTotal = res.bean.total
+        }).finally(() => {
+          loadding.close();
         })
       },
       clickExam(row) {
         if (row.status === 1) {
-          this.$router.push({name: 'exam-detail', params: {id: row.id}})
+          if(row.paperResult === null){
+            queryBean('PaperQuest', {paperId: row.id}).then(res =>{
+              let arrValues = res.bean.data.map((item) => ({questId: item.questId}));
+              let doc = {
+                paperId: row.id,
+                paperResultAnswerList: arrValues
+              };
+              addBean('PaperResult', doc).then(res =>{
+                if (res.retCode === 0) {
+                  this.$toast({
+                    message: '进入考试！',
+                    iconClass: 'el-icon-circle-check'
+                  });
+                  setTimeout(() => {
+                    this.$router.push('/wap/exam-detail/' + row.id);
+                  },500)
+                }
+              }).catch(err => {
+                this.$toast({
+                  message: '添加试卷失败！'+ err,
+                  iconClass: 'el-icon-circle-close'
+                });
+              })
+            })
+          } else {
+            // 通过菜单URL跳转至指定路由
+            if (row.paperResult.status === 1) {
+              this.$toast({
+                message: '您已提交该试卷，请耐心等待老师批阅！',
+                iconClass: 'el-icon-warning-outline'
+              });
+            } else {
+              this.$router.push('/wap/exam-detail/' + row.id);
+            }
+          }
         } else {
           this.$toast({
             message: '考试' + this.examStatus(row.status),

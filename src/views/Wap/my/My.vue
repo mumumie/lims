@@ -68,11 +68,11 @@
       return{
         AccountData:{},
         arrName:[
-          {name:'考试查询',icon:'el-icon-s-promotion',path:''},
-          {name:'成绩查询',icon:'el-icon-s-flag',path:''},
+          {name:'考试查询',icon:'el-icon-s-promotion',path:'exam-enquirise'},
+          // {name:'成绩查询',icon:'el-icon-s-flag',path:''},
           {name:'自测历史',icon:'el-icon-s-marketing',path:'selfHistory'},
-          {name:'我的消息',icon:'el-icon-s-comment',path:''},
-          {name:'用户设置',icon:'el-icon-s-opportunity',path:''},
+          // {name:'我的消息',icon:'el-icon-s-comment',path:''},
+          // {name:'用户设置',icon:'el-icon-s-opportunity',path:''},
         ]
       }
     },

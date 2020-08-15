@@ -54,6 +54,16 @@ const wapRouter = {
       name:'exam-detail',
       component:() => import('@/views/Wap/exam/examDetail')
     },
+    {
+      path:'exam-enquirise',
+      name:'exam-enquirise',
+      component:() => import('@/views/Wap/my/exam-enquirise')
+    },
+    {
+      path:'exam-result/:id',
+      name:'exam-result',
+      component:() => import('@/views/Wap/my/exam-result')
+    },
   ]
 }
 export default wapRouter

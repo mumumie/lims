@@ -561,7 +561,6 @@
             params.scoreSum = this.totalScore
             params.deptmentIds = params.deptmentIds.flat()
             params.status = val
-            console.log(params);
             this.$api.paper.save(params).then((res) => {
               if (res.retCode === 0) {
                 let questList = this.questList.map(item => {

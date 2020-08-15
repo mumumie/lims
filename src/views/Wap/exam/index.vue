@@ -79,9 +79,15 @@
             status$ne: -1
           }
         };
+        let loadding = this.$toast({
+          message: '数据加载中...',
+          iconClass: 'el-icon-loading'
+        });
         queryBean("Paper", pageRequest.condition, pageRequest).then(res => {
           this.examData = this.examData.concat(res.bean.data);
           this.examTotal = res.bean.total
+        }).finally(() => {
+          loadding.close();
         })
       },
       clickExam(row) {
@@ -98,7 +104,7 @@
                 if (res.retCode === 0) {
                   this.$toast({
                     message: '进入考试！',
-                    iconClass: 'el-icon-circle-close'
+                    iconClass: 'el-icon-circle-check'
                   });
                   setTimeout(() => {
                     this.$router.push('/wap/exam-detail/' + row.id);
@@ -116,7 +122,7 @@
             if (row.paperResult.status === 1) {
               this.$toast({
                 message: '您已提交该试卷，请耐心等待老师批阅！',
-                iconClass: 'el-icon-circle-close'
+                iconClass: 'el-icon-warning-outline'
               });
             } else {
               this.$router.push('/wap/exam-detail/' + row.id);
@@ -132,7 +138,7 @@
       toPath(name){
         this.$router.push({path:'/wap/'+name})
       },
-      examStatus(val) {
+      examStatus (val) {
         switch(val) {
           case 0:
             return '未开始';
