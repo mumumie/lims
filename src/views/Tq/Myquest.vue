@@ -167,7 +167,7 @@
         },
         AnswerType:['A','B','C','D','E','F'],
         type:['','单选题','多选题','判断题','填空题','问答题'],
-        difficulty:['','简单','中等','困难'],
+        difficulty:['', '易', '较易', '中', '较难', '难'],
         previewData:{},
         isEdit:false,
         questId:'',

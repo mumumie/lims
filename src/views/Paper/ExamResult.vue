@@ -17,7 +17,6 @@
         :showBatchDelete="false"
         @handleExam="handleExam"
         @findPage="findPage"
-        @handleDetail="handleDetail"
         @handleEdit="handleEdit"
         @handleBatchDelete="handleBatchDelete"
         @handleDelete="handleDelete">
@@ -230,7 +229,7 @@
         if (!paperResult.anonymous) {
           paperResult.reviewerId = sessionStorage.getItem('userid')
         }
-        updateBean('PaperResult',paperResult.id,paperResult).then(res =>{
+        updateBean('PaperResult', paperResult.id, paperResult).then(res =>{
           if (res.retCode === 0) {
             this.findPage(null)
             this.$message({
@@ -247,7 +246,8 @@
           pageNum: 1,
           pageSize: 10 ,
           sort:{
-            insertDt:-1,
+            insertDt: -1,
+            totalScore: -1
           },
           condition:{
           }
@@ -255,8 +255,9 @@
         if(data !== null) {
           pageRequest = data.pageRequest
         }
+        pageRequest.sort.totalScore = -1
         pageRequest.condition.paperId = this.paper.id
-        console.log(pageRequest.condition);
+        console.log(pageRequest);
         queryBean('PaperResult', pageRequest.condition, pageRequest).then((res) => {
           this.pageResult = res.pageResult;
         }).then(data!=null?data.callback:'')
@@ -347,6 +348,7 @@
                 });
                 let scoreData=[];
                 let questList=res.bean.data.map(item =>{
+                  item.quest.score = item.score
                   return item.quest;
                 });
                 typeData.forEach((item,index) =>{
@@ -434,7 +436,7 @@
                 }
                 this.$set(v, 'topScore', answer.score)
                 this.$set(v, 'comment', answer.comment)
-                v.flag = answer.score > 0 ? true : false;
+                v.flag = answer.score > 0;
               })
             })
             this.paperVisible = true;

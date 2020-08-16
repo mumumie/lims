@@ -71,7 +71,7 @@
           {name:'考试查询',icon:'el-icon-s-promotion',path:'exam-enquirise'},
           // {name:'成绩查询',icon:'el-icon-s-flag',path:''},
           {name:'自测历史',icon:'el-icon-s-marketing',path:'selfHistory'},
-          // {name:'我的消息',icon:'el-icon-s-comment',path:''},
+          {name:'我的错题库',icon:'el-icon-link',path:'my-mistakes'},
           // {name:'用户设置',icon:'el-icon-s-opportunity',path:''},
         ]
       }
@@ -151,6 +151,7 @@
     70%{background-color:#AC92ED;}
     80%{background-color:#EC87BF;}
     90%{background-color:#ED5564;}
+    100%{background-color:#ED5564;}
   }
   .header_box{
     height:1rem;

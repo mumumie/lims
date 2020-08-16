@@ -60,6 +60,12 @@
             clearable>
           </el-cascader>
         </el-form-item>
+        <el-form-item label="考试类型">
+          <el-select v-model="formData.type" placeholder="请选择考试类型">
+            <el-option :label="item.label" :value="item.value" v-for="(item,index) in examTypeData"
+                       :key="item.value"></el-option>
+          </el-select>
+        </el-form-item>
       </div>
       <el-form-item label="试题列表">
         <div>
@@ -307,7 +313,8 @@
           createAnnual: 2020,
           semester: '第一学期',
           passScore: 0,
-          deptmentIds: []
+          deptmentIds: [],
+          type: 1
         },
         formDataRules: {
           questBankId: [
@@ -340,6 +347,10 @@
           {label: '2021-2022', value: 2021},
           {label: '2022-2023', value: 2022},
           {label: '2023-2024', value: 2023}
+        ],
+        examTypeData: [
+          {label: '考试', value: 1},
+          {label: '随堂测试', value: 2}
         ],
         questList: [],
         questBankData: [],

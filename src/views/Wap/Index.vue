@@ -24,13 +24,23 @@
       <!-- tab-container -->
       <mt-tab-container v-model="selected">
         <mt-tab-container-item id="1">
+          <div v-else class="noPractice_box" v-if="examData.length === 0">
+            <div class="practice_icon">
+              <i class="el-icon-s-order"></i>
+            </div>
+            <p>暂无数据</p>
+          </div>
           <div class="practice_list_box" @click="clickExam(item)" v-for="item in examData" :key="item.id">
             <div class="list_img">
               <img src="../../../static/images/user.png" alt="">
             </div>
             <div class="list_content">
               <div class="list_content_box">
-                <span>{{item.name}}</span>
+                <div class="list_content_title">
+                  <span>{{item.name}}</span>
+                  <span class="exam-type" :class="{orange: item.type === 2}">{{item.type === 2 ? '随堂测试' : '考试'}}</span>
+                </div>
+
                 <p>{{examStatus(item.status)}}</p>
               </div>
               <span>{{item.date + ' ' + item.startTime + '~' + item.endTime}}</span>
@@ -44,6 +54,12 @@
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="2">
+          <div v-else class="noPractice_box" v-if="practiceData.length === 0">
+            <div class="practice_icon">
+              <i class="el-icon-s-order"></i>
+            </div>
+            <p>暂无数据</p>
+          </div>
           <div class="practice_list_box" @click="clickPractice(item)" v-for="item in practiceData" :key="item.id">
             <div class="list_img">
               <img src="../../../static/images/user.png" alt="">
@@ -291,6 +307,8 @@
   }
   .list_content{
     margin-left:0.2rem;
+    flex: auto;
+    margin-right: 0.2rem;
   }
   .list_content>span{
     color:#999;
@@ -298,6 +316,23 @@
   }
   .list_content_box{
     height:1rem;
+  }
+  .list_content_title{
+    overflow: hidden;
+  }
+  .list_content_title .exam-type{
+    float: right;
+    height: 0.4rem;
+    line-height: 0.4rem;
+    font-size: 0.2rem;
+    padding: 0 0.2rem;
+    border-radius: 0.2rem;
+    background: #00bcd4;
+    color: #fff;
+    margin-top: 0.1rem;
+  }
+  .list_content_title .exam-type.orange{
+    background: orange;
   }
   .list_content_box span{
     line-height: 0.5rem;
@@ -316,5 +351,20 @@
   }
   .mint-tab-container{
     margin-top:0.1rem;
+  }
+  .noPractice_box p{
+    text-align: center;
+    line-height: 0.5rem;
+  }
+  .practice_icon{
+    width:1rem;
+    height:1rem;
+    line-height: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color:#fff;
+    background: #0c96ff;
+    margin:1rem auto 0;
+    border-radius: 50%;
   }
 </style>

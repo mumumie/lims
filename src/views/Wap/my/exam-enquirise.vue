@@ -12,7 +12,10 @@
         </div>
         <div class="list_content">
           <div class="list_content_box">
-            <span>{{item.name}}</span>
+            <div class="list_content_title">
+              <span>{{item.name}}</span>
+              <span class="exam-type" :class="{orange: item.type === 2}">{{item.type === 2 ? '随堂测试' : '考试'}}</span>
+            </div>
             <p>{{examStatus(item.status)}}</p>
           </div>
           <span>{{item.date + ' ' + item.startTime + '~' + item.endTime}}</span>
@@ -130,6 +133,8 @@
   }
   .list_content{
     margin-left:0.2rem;
+    flex: auto;
+    margin-right: 0.2rem;
   }
   .list_content>span{
     color:#999;
@@ -137,6 +142,23 @@
   }
   .list_content_box{
     height:1rem;
+  }
+  .list_content_title{
+    overflow: hidden;
+  }
+  .list_content_title .exam-type{
+    float: right;
+    height: 0.4rem;
+    line-height: 0.4rem;
+    font-size: 0.2rem;
+    padding: 0 0.2rem;
+    border-radius: 0.2rem;
+    background: #00bcd4;
+    color: #fff;
+    margin-top: 0.1rem;
+  }
+  .list_content_title .exam-type.orange{
+    background: orange;
   }
   .list_content_box span{
     line-height: 0.5rem;

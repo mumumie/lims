@@ -31,4 +31,22 @@ export const mapTree = (tree, map)=>{
       tree.children=[]
     }
   }
-}
+};
+
+//过滤难易度字段
+export const difficultyFilter = (row, column, cellValue, index) => {
+  switch (cellValue) {
+    case 1:
+      return '易';
+    case 2:
+      return '较易';
+    case 3:
+      return '中';
+    case 4:
+      return '较难';
+    case 5:
+      return '难';
+    default:
+      return ' - ';
+  }
+};

@@ -112,6 +112,25 @@
         append-to-body
         :visible.sync="paperVisible">
         <div class="paper_box" ref="print" v-if="scoreData.length > 0">
+          <div class="paper_count">
+            <p>{{`${paperInfo.createAnnual}-${paperInfo.createAnnual + 1}学年 ${paperInfo.semester} 《${paperInfo.questBank.name}》${paperInfo.name}`}}</p>
+            <table border="1" width="100%" cellspacing="0" cellpadding="0">
+              <tr>
+                <td width="150">题型</td>
+                <td width="150" v-for="(item, index) in scoreData">{{AnswerIndex[index]}}</td>
+                <td width="150">总分</td>
+              </tr>
+              <tr>
+                <td>得分</td>
+                <td v-for="(item, index) in scoreData"></td>
+                <td rowspan="2"></td>
+              </tr>
+              <tr>
+                <td>阅卷人</td>
+                <td v-for="(item, index) in scoreData"></td>
+              </tr>
+            </table>
+          </div>
           <div v-for="(item,index) in scoreData" :key="index">
             <h3>{{AnswerIndex[index]+'、'+item.name + '(共' +item.count+'题，共'+ item.totalScore+ '分)'}}</h3>
             <div v-for="(ite,ind) in item.children" :key="ind" class="paper_quest">
@@ -214,6 +233,9 @@
         size="50%"
         :visible.sync="drawer"
         direction="rtl">
+        <div style="position: absolute;top:20px;right:20px;">
+          <el-button type="primary" size="mini" @click="reportCard">导出成绩</el-button>
+        </div>
         <h1 style="text-align: center;">{{paper.name}}</h1>
         <ExamResult :paper="paper" v-if="drawer"></ExamResult>
       </el-drawer>
@@ -229,6 +251,7 @@
   import ExamResult from "./ExamResult"
   import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
   import { format } from "@/utils/datetime"
+  import { baseUrl } from "@/utils/global"
   import {addBean, queryBean, updateBean,findMyExamPaper,aggregate} from "@/http/base";
   import mEcharts from '@/components/Echarts/EchartsPie'
   import {mapTree} from "../../utils";
@@ -356,7 +379,8 @@
             {required: true, message: '请选择结束时间', trigger: 'change'}
           ]
         },
-        deptData: []
+        deptData: [],
+        paperInfo: {}
       }
     },
     watch:{
@@ -369,6 +393,20 @@
       }
     },
     methods: {
+      // 导出成绩
+      reportCard() {
+        let pageRequest= {
+          sort: {
+            insertDt: -1,
+            totalScore: -1
+          },
+          condition: {
+            paperId: this.paper.id
+          }
+        };
+        const query = encodeURI(JSON.stringify(pageRequest))
+        window.open(`${baseUrl}/excel/queryPaperResult?body=${query}`, '_blank')
+      },
       findDeptTree: function () {
         this.$api.dept.findDeptTree().then((res) => {
           let options=function(option){
@@ -587,8 +625,10 @@
       },
       // 显示预览界面
       handleDetail: function (params) {
+        console.log(params.row);
+        this.paperInfo = params.row;
         let postData = {
-          paperId:params.row.id
+          paperId: params.row.id
         }
         queryBean('PaperQuest',postData).then(res =>{
           let questBankData = params.row.questBank;
@@ -749,6 +789,19 @@
 </script>
 
 <style scoped>
+  .paper_count{
+    margin-bottom: 20px;
+  }
+  .paper_count p{
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 50px;
+  }
+  .paper_count table td{
+    text-align: center;
+    line-height: 50px;
+  }
   .paper_box h3{
     margin:0 0 10px;
   }

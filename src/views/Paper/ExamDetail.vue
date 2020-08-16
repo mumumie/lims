@@ -80,9 +80,7 @@
         deep: true
       }
     },
-    mounted(){
-      document.oncontextmenu=new Function("event.returnValue=false");
-      document.onselectstart=new Function("event.returnValue=false");
+    mounted() {
       this.getExamPaper({paperId: this.$route.query.id});
       this.save = this.debounce(this.saveForm, 10000);
       this.timer = setInterval(() => {
