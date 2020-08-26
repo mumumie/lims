@@ -60,10 +60,24 @@
             clearable>
           </el-cascader>
         </el-form-item>
+        <el-form-item label="学生范围">
+          <el-select v-model="formData.studentIds" multiple collapse-tags placeholder="请选择学生">
+            <el-option
+              :label="`${item.nickname}(${item.name})`"
+              :value="item.id"
+              v-for="item in studentList"
+              :key="item.id"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="考试类型">
           <el-select v-model="formData.type" placeholder="请选择考试类型">
-            <el-option :label="item.label" :value="item.value" v-for="(item,index) in examTypeData"
-                       :key="item.value"></el-option>
+            <el-option
+              :label="item.label"
+              :value="item.value"
+              v-for="(item,index) in examTypeData"
+              :key="item.value"
+            />
           </el-select>
         </el-form-item>
       </div>
@@ -314,7 +328,8 @@
           semester: '第一学期',
           passScore: 0,
           deptmentIds: [],
-          type: 1
+          type: 1,
+          studentIds: []
         },
         formDataRules: {
           questBankId: [
@@ -361,7 +376,8 @@
         typeData: [],
         scoreData: [],
         topicData:[],
-        selectList: []
+        selectList: [],
+        studentList: []
       }
     },
     watch: {
@@ -379,6 +395,13 @@
       totalCount: function () {
         return this.questList.length;
       },
+    },
+    created() {
+      this.findCourse();
+      this.getStudent();
+    },
+    mounted() {
+      this.findDeptTree();
     },
     methods: {
       handleSelectionChange(val) {
@@ -408,6 +431,17 @@
           .then(res => {
             if (res.retCode === 0) {
               this.questBankData = res.bean.data;
+            }
+          })
+      },
+      getStudent() {
+        let condition = {
+          roleIdList$in: ['5e85aeee0efa842d5f5dfd82']
+        };
+        queryBean('Account', condition)
+          .then(res => {
+            if (res.retCode === 0) {
+              this.studentList = res.bean.data;
             }
           })
       },
@@ -612,12 +646,6 @@
           })
         }
       }
-    },
-    created() {
-      this.findCourse();
-    },
-    mounted() {
-      this.findDeptTree();
     }
   }
 </script>

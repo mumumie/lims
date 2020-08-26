@@ -50,3 +50,32 @@ export const difficultyFilter = (row, column, cellValue, index) => {
       return ' - ';
   }
 };
+
+//过滤试题类型字段
+export const questTypeFilter = (row, column, cellValue, index) => {
+  switch (cellValue) {
+    case 1:
+      return '单选题';
+    case 2:
+      return '多选题';
+    case 3:
+      return '判断题';
+    case 4:
+      return '填空题';
+    case 5:
+      return '问答题';
+    default:
+      return ' - ';
+  }
+};
+
+//过滤html格式
+export const htmlFilter = (row, column, cellValue, index) => {
+  if(cellValue){
+    let str1 = cellValue.replace(/[\“\”\’\‘\'\"\\\/\s+\b\f\n\r\t]/g, '');
+    let str2 = str1.replace(/<[^>]+>/g,"");
+    return str2
+  }else{
+    return cellValue
+  }
+}

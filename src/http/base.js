@@ -251,4 +251,25 @@ export const mockExpRecord = (postData) => {
   })
 }
 
+// 发送验证码
+export const sendSms = (postData) => {
+  return axios({
+    url: '/nonauth/sendSms',
+    method: 'post',
+    data: postData,
+    baseUrl: baseUrl,
+  })
+}
+
+// 修改密码
+export const updatePassword = (postData) => {
+  return axios({
+    url: '/nonauth/updatePassword',
+    method: 'post',
+    data: postData,
+    baseUrl: baseUrl,
+  })
+}
+
+
 

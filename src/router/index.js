@@ -267,14 +267,6 @@ function addDynamicRoutes (menuList = [], routes = []) {
        icon: 'el-icon-user-solid',
        index: 100
      }
-   },{
-     path:'teach/experimentdetail',
-     component: () => import('@/views/Teach/ExperimentDetail'),
-     name: '报表详情',
-     meta: {
-       icon: 'el-icon-edit-outline',
-       index: 100
-     }
    });
    addDynamicRoutes(temp, routes)
  } else {

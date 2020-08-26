@@ -24,7 +24,7 @@
           <el-button size="small" icon="fa fa-male" @click="userDetailHandle"> 个人中心</el-button>
         </span>
         <span class="main-operation-item">
-          <el-button size="small" icon="fa fa-key" @click="editPasswordHandle(0)"> 修改密码</el-button>
+          <el-button size="small" icon="fa fa-key" @click="editPasswordHandle"> 修改密码</el-button>
         </span>
     </div>
     <div class="other-operation">
@@ -46,20 +46,11 @@
       {{$t("common.logout")}}
     </div>
     <!--修改密码界面-->
-    <el-dialog title="修改密码" width="500px" :visible.sync="editVisible" :close-on-click-modal="false" append-to-body>
-      <el-form :model="dataForm" label-width="100px" :rules="dataFormRules" ref="dataForm" size="mini" label-position="right" v-if="editVisible">
-        <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="dataForm.newPassword" type="password" placeholder="请输入密码"></el-input>
-        </el-form-item>
-        <el-form-item label="确认密码" prop="newPassword2">
-          <el-input v-model="dataForm.newPassword2" type="password" placeholder="请输入密码"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button size="mini" @click.native="editPasswordHandle(1)">重置</el-button>
-        <el-button size="mini" type="primary" @click.native="editPassword" :loading="editLoading">{{$t('action.submit')}}</el-button>
-      </div>
-    </el-dialog>
+    <forget-password
+      :switchBtn="editVisible"
+      v-if="editVisible"
+      @close="editVisible = false"
+    />
     <!--备份还原界面-->
     <backup ref="backupDialog" @afterRestore="afterRestore"></backup>
   </div>
@@ -68,11 +59,13 @@
 <script>
 import Cookies from "js-cookie"
 import Backup from "@/views/Backup/Backup"
+import ForgetPassword from "@/views/Core/forget-password"
 import { updateBean } from "@/http/base";
 export default {
   name: 'PersonalPanel',
   components:{
-    Backup
+    Backup,
+    ForgetPassword
   },
   props: {
     user: {
@@ -86,80 +79,13 @@ export default {
     }
   },
   data() {
-    //此处即表单发送之前验证
-    let validateNewPassword = (rule, value, callback) => {
-      if (value === this.dataForm.password) {
-        callback(new Error('新密码不能与原密码相同!'))
-      } else {
-        callback()
-      }
-    };
-    let validateNewPassword2 = (rule, value, callback) => {
-      if (value !== this.dataForm.newPassword) {
-        callback(new Error('与新密码不一致!'))
-      } else {
-        callback()
-      }
-    };
     return {
-      editVisible: false,
-      dataForm: {
-        newPassword: '',
-        newPassword2: ''
-      },
-      dataFormRules: {
-        newPassword: [
-          { required: true, message: '请设置新密码', trigger: 'blur' },
-          { min: 6, message: '长度最少 6 个字符' }
-        ],
-        newPassword2: [
-          { required: true, message: '请确认新密码', trigger: 'blur' },
-          { validator: validateNewPassword2, trigger: 'blur' }
-        ]
-      },
-      editLoading: false
+      editVisible: false
     }
   },
   methods: {
-    editPasswordHandle(val) {
-      if (val) {
-        this.$refs.dataForm.resetFields();
-      } else {
-        this.dataForm = {
-          newPassword: '',
-          newPassword2: ''
-        };
-        this.editVisible = true
-      }
-    },
-    editPassword() {
-      this.$refs.dataForm.validate(valid => {
-        if (valid) {
-          const params = {
-            id: sessionStorage.getItem('userid'),
-            passwd: this.dataForm.newPassword
-          }
-          updateBean('Account', params.id, params).then((res) => {
-            if (res.retCode === 0) {
-              this.$alert('密码已修改,请重新登录账号', '提示', {
-                type: 'warning',
-                confirmButtonText: '确定',
-                callback: action => {
-                  sessionStorage.removeItem("user");
-                  sessionStorage.removeItem("userid");
-                  sessionStorage.removeItem("registeInfo");
-                  sessionStorage.removeItem("role");
-                  Cookies.remove("token");
-                  this.$router.push('/login')
-                }
-              });
-            }
-          })
-        } else {
-          this.$message.error('请正确填写表单')
-          return false
-        }
-      })
+    editPasswordHandle() {
+      this.editVisible = true
     },
     // 退出登录
     logout: function() {

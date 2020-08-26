@@ -29,6 +29,7 @@
               <el-radio :label="1">桌面版</el-radio>
               <el-radio :label="2">手机版</el-radio>
             </el-radio-group>
+            <span style="padding-left:50px;color:#606266;cursor:pointer;" @click="forgetPassword = true">找回密码</span>
           </el-form-item>
           <el-form-item style="width:100%;padding-top:15px;">
             <el-button type="primary" style="width:140px;" class="btn" @click.native.prevent="loginResp" :loading="loading">账号登录</el-button>
@@ -39,6 +40,12 @@
         <img src="/static/images/login_build.jpg" alt="">
       </div>
     </div>
+    <!--修改密码界面-->
+    <forget-password
+      :switchBtn="forgetPassword"
+      v-if="forgetPassword"
+      @close="forgetPassword = false"
+    />
   </div>
 </template>
 
@@ -46,9 +53,13 @@
 import { mapState } from 'vuex'
 import Cookies from "js-cookie"
 import {post, queryBean, nonauthQueryBean} from "@/http/base";
+import ForgetPassword from "@/views/Core/forget-password";
 import {ErrorResult} from "../utils/error";
 export default {
   name: 'Login',
+  components: {
+    ForgetPassword
+  },
   data() {
     return {
       loading: false,
@@ -68,7 +79,7 @@ export default {
       checked: true,
       accountChecked:false,
       passwdChecked:false,
-
+      forgetPassword: false
     }
   },
   watch:{

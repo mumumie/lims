@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <div v-if="!isEdit">
+    <div>
       <tip :value="
     ['显示学生的考试列表，状态分别为未开始、进行中、已结束。',
     '未开始的考试需等待，进行中的考试可以点击进入考试，已结束的考试待老师批阅完之后可以查看考试结果。']" />
@@ -58,7 +58,16 @@
         title="试卷结果"
         append-to-body
         :visible.sync="paperVisible">
-        <div></div>
+        <div style="float:right;">
+          <el-button type="primary" @click="accuracyVisible = true" size="mini">查看答题准确率</el-button>
+          <!--准确率界面-->
+          <accuracy-rate
+            :switchBtn="accuracyVisible"
+            :list="accuracyData"
+            v-if="accuracyVisible"
+            @close="accuracyVisible = false"
+          />
+        </div>
         <div class="paper_box" ref="print" v-if="scoreData.length > 0">
           <div style="line-height: 80px;font-size: 25px;font-weight:bold;">
             <span v-if="paperResult.status === 1">客观题得分：{{paperResult.objScore}}</span>
@@ -138,11 +147,9 @@
   import PopupTreeInput from "@/components/PopupTreeInput"
   import KtTable from "@/views/Core/PaperExamTable"
   import KtButton from "@/views/Core/KtButton"
-  import EditQuest from "@/views/Tq/EditQuest"
-  import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
   import { format } from "@/utils/datetime"
   import {addBean, queryBean, updateBean, getBean, aggregate} from "@/http/base";
-  import mEcharts from '@/components/Echarts/EchartsPie'
+  import AccuracyRate from "./template/accuracy-rate"
   import {mapTree} from "../../utils";
   export default {
     name:'Exam',
@@ -150,9 +157,7 @@
       PopupTreeInput,
       KtTable,
       KtButton,
-      TableColumnFilterDialog,
-      EditQuest,
-      mEcharts
+      AccuracyRate
     },
     data() {
       return {
@@ -171,6 +176,7 @@
         operation: false, // true:新增, false:编辑
         paperVisible: false, // 新增编辑界面是否显示
         statisticsVisible:false,
+        accuracyVisible: false,
         editLoading: false,
         loading:false,
         dataFormRules: {
@@ -200,7 +206,8 @@
         isEdit:false,
         questId:'',
         scoreData:[],
-        isShowAnswer: true
+        isShowAnswer: true,
+        accuracyData: [] // 答案准确率
       }
     },
     watch:{
@@ -378,6 +385,7 @@
             }
           });
           let scoreData=[];
+          this.accuracyData = res.bean.data
           let questList=res.bean.data.map(item =>{
             item.quest.score = item.score
             return item.quest;

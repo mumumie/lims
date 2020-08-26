@@ -323,64 +323,61 @@
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            updateBean('PaperResult', params.row.id, {status: 1}).then(data =>{
-              this.paperResult = params.row;
-              this.paperResult.status = 1
-              let postData = {
-                paperId:params.row.paperId
-              }
-              queryBean('PaperQuest', postData).then(res =>{
-                let questBankData = this.paper.questBank;
-                let selectType = [
-                  {type:1,arrStr:'singleSelectType'},
-                  {type:2,arrStr:'multiplySelectType'},
-                  {type:3,arrStr:'trueFalseType'},
-                  {type:4,arrStr:'completionType'},
-                  {type:5,arrStr:'subjectType'},
-                ];
-                let typeData=[];
-                selectType.forEach(item =>{
-                  if (questBankData[item.arrStr].length > 0) {
-                    questBankData[item.arrStr].forEach(ite =>{
-                      typeData.push({type:item.type,value:ite})
-                    })
-                  }
-                });
-                let scoreData=[];
-                let questList=res.bean.data.map(item =>{
-                  item.quest.score = item.score
-                  return item.quest;
-                });
-                typeData.forEach((item,index) =>{
-                  scoreData[index]={};
-                  scoreData[index].name = item.value;
-                  scoreData[index].baseType = item.type;
-                  scoreData[index].count = questList.filter(type => type.type === item.value).length;
-                  scoreData[index].children = questList.filter(type => type.type === item.value);
-                  scoreData[index].totalScore = scoreData[index].children.reduce((prev,next) => (prev + next.score), 0);
-                })
-                this.scoreData = scoreData.filter(item => item.count !== 0);
-                this.scoreData.map(item => {
-                  item.children.map(v => {
-                    const answer = params.row.paperResultAnswerList.filter(item => item.questId === v.id)[0]
-                    if (v.baseType === 1) {
-                      v.answer = answer.optionAnswer && answer.optionAnswer.length > 0 ? this.AnswerType[answer.optionAnswer[0]] : ''
-                    } else if (v.baseType === 2) {
-                      v.answer = answer.optionAnswer.map(v => this.AnswerType[v])
-                    } else if (v.baseType === 3) {
-                      v.answer = answer.tfAnswer
-                    } else if (v.baseType === 4) {
-                      v.answer = answer.blankAnswer
-                    } else if (v.baseType === 5) {
-                      v.answer = answer.answerContent
-                    }
-                    this.$set(v, 'topScore', answer.score)
-                    this.$set(v, 'comment', answer.comment)
-                    v.flag = answer.score > 0 ? true : false;
+            this.paperResult = params.row;
+            let postData = {
+              paperId:params.row.paperId
+            }
+            queryBean('PaperQuest', postData).then(res =>{
+              let questBankData = this.paper.questBank;
+              let selectType = [
+                {type:1,arrStr:'singleSelectType'},
+                {type:2,arrStr:'multiplySelectType'},
+                {type:3,arrStr:'trueFalseType'},
+                {type:4,arrStr:'completionType'},
+                {type:5,arrStr:'subjectType'},
+              ];
+              let typeData=[];
+              selectType.forEach(item =>{
+                if (questBankData[item.arrStr].length > 0) {
+                  questBankData[item.arrStr].forEach(ite =>{
+                    typeData.push({type:item.type,value:ite})
                   })
-                })
-                this.paperVisible = true;
+                }
+              });
+              let scoreData=[];
+              let questList=res.bean.data.map(item =>{
+                item.quest.score = item.score
+                return item.quest;
+              });
+              typeData.forEach((item,index) =>{
+                scoreData[index]={};
+                scoreData[index].name = item.value;
+                scoreData[index].baseType = item.type;
+                scoreData[index].count = questList.filter(type => type.type === item.value).length;
+                scoreData[index].children = questList.filter(type => type.type === item.value);
+                scoreData[index].totalScore = scoreData[index].children.reduce((prev,next) => (prev + next.score), 0);
               })
+              this.scoreData = scoreData.filter(item => item.count !== 0);
+              this.scoreData.map(item => {
+                item.children.map(v => {
+                  const answer = params.row.paperResultAnswerList.filter(item => item.questId === v.id)[0]
+                  if (v.baseType === 1) {
+                    v.answer = answer.optionAnswer && answer.optionAnswer.length > 0 ? this.AnswerType[answer.optionAnswer[0]] : ''
+                  } else if (v.baseType === 2) {
+                    v.answer = answer.optionAnswer.map(v => this.AnswerType[v])
+                  } else if (v.baseType === 3) {
+                    v.answer = answer.tfAnswer
+                  } else if (v.baseType === 4) {
+                    v.answer = answer.blankAnswer
+                  } else if (v.baseType === 5) {
+                    v.answer = answer.answerContent
+                  }
+                  this.$set(v, 'topScore', answer.score)
+                  this.$set(v, 'comment', answer.comment)
+                  v.flag = answer.score > 0 ? true : false;
+                })
+              })
+              this.paperVisible = true;
             })
           }).catch(() => {
           })
