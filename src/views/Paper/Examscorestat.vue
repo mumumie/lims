@@ -11,16 +11,16 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="题型" v-if="filters.tag === 'baseType'">
-        <el-select v-model="filters.groupName" placeholder="请选择题型">
-          <el-option
-            :label="item.label"
-            :value="item.value"
-            v-for="item in groupNameList"
-            :key="item.value"
-          />
-        </el-select>
-      </el-form-item>
+<!--      <el-form-item label="题型" v-if="filters.tag === 'baseType'">-->
+<!--        <el-select v-model="filters.groupName" placeholder="请选择题型">-->
+<!--          <el-option-->
+<!--            :label="item.label"-->
+<!--            :value="item.value"-->
+<!--            v-for="item in groupNameList"-->
+<!--            :key="item.value"-->
+<!--          />-->
+<!--        </el-select>-->
+<!--      </el-form-item>-->
       <el-form-item>
         <kt-button icon="fa fa-search" :label="$t('action.search')" perms="" type="primary" @click="findPage(null)"/>
       </el-form-item>
@@ -38,6 +38,7 @@
       :showBtnEdit="false"
       :showBtnDelete="false"
       :showBatchDelete="false"
+      :showOperation="false"
       @findPage="findPage"
     />
   </div>
@@ -57,7 +58,6 @@
       return {
         filters: {
           tag: 'baseType',
-          groupName: ''
         },
         groupNameList: [
           { value: 1, label: '易'},
@@ -94,9 +94,6 @@
           pageRequest = data.pageRequest
         }
         pageRequest.condition.tag = this.filters.tag;
-        if (this.filters.tag === 'baseType') {
-          pageRequest.condition.groupName = this.filters.groupName;
-        }
         queryBean('QuestGroupStat', pageRequest.condition, pageRequest).then((res) => {
           this.pageResult = res.pageResult;
         }).then(data!=null?data.callback:'')
@@ -105,9 +102,9 @@
       initColumns: function () {
         this.columns = [
           /*{prop:"id", label:"ID", minWidth:50},*/
-          {prop:"name", label:"统计名称", minWidth:120},
+          {prop:"tag", label:"统计类型", minWidth:120, formatter: this.filterTag },
           {prop:"answerTime", label:"答题次数", minWidth:120},
-          {prop:"createAnnual", label:"正确次数", minWidth:120},
+          {prop:"correctTime", label:"正确次数", minWidth:120},
           {prop:"correctRate", label:"正确率", minWidth:120},
           {prop:"sumScore", label:"总得分", minWidth:120},
           {prop:"avgScore", label:"平均分", minWidth:120}
@@ -115,6 +112,18 @@
         // this.filterColumns = JSON.parse(JSON.stringify(this.columns));
         this.filterColumns = this.columns;
       },
+      filterTag(row, column, value, index) {
+        switch (value) {
+          case 'baseType':
+            return '题型';
+          case 'difficulty':
+            return '难度';
+          case 'topic':
+            return '知识点';
+          default:
+            return '-'
+        }
+      }
     }
   }
 </script>

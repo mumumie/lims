@@ -1,7 +1,15 @@
 <template>
   <div class="exampaper">
     <el-form ref="formData" :model="formData" :rules="rules">
-      <div v-if="examInfo.name" style="position:fixed;top:120px;right:50px;">离考试结束：{{time}}</div>
+      <div v-if="examInfo.name" style="position:fixed;top:120px;right:50px;z-index: 1000;border: 1px solid #eee;background: #fff;padding: 5px 10px;box-shadow: 0 0 12px 2px rgba(0,0,0,.2)">
+        <el-button type="primary" size="mini" @click="handleSheet">答题卡</el-button>
+        离考试结束：{{ time }}
+        <answer-sheet
+          :switchBtn="answerSheetVisiable"
+          :list="sheetList"
+          @close="answerSheetVisiable = false"
+        />
+      </div>
       <h2 v-if="examInfo.name" style="text-align: center;font-size: 25px;">{{examInfo.name}}</h2>
       <div v-for="(item,index) in examPaperData" :key="index">
         <h3>{{AnswerIndex[index] + '、'+item.name + '(共' + item.count + '题，共' + item.totalScore+ '分)'}}</h3>
@@ -25,6 +33,8 @@
               <el-input
                 v-model="formData[v.id][iopts]"
                 :placeholder="'填空' + (iopts + 1)" v-for="(opt, iopts) in v.blankAnswer"
+                oncopy="return false"
+                onpaste="return false"
                 size="mini"
                 style="width:25%;"
                 :key="iopts">
@@ -48,12 +58,14 @@
 
 <script>
   import FroalaEditor from "@/components/wangEditor/froalaEditor";
+  import AnswerSheet from "./template/answer-sheet";
   import {getBean, queryBean, updateBean,updateBatchBean1} from "@/http/base";
   import { formatDataStep } from "@/utils/datetime"
   export default {
     name: "CurriculumDetail",
     components:{
-      FroalaEditor
+      FroalaEditor,
+      AnswerSheet
     },
     data(){
       return{
@@ -69,7 +81,9 @@
         questList: [],
         save: () => {},
         time: '',
-        timer: null
+        timer: null,
+        answerSheetVisiable: false,
+        sheetList: []
       }
     },
     watch: {
@@ -94,23 +108,12 @@
             confirmButtonText: '确定',
             type: 'warning',
             callback: (action) => {
-              this.finish=false;
+              this.finish = false;
               this.$router.push({path:'/paper/exam'});
               // let val=this.$store.state.tab.mainTabs.splice(-1);
               // this.$store.commit('updateMainTabsActiveName', val);
-              next()
             }
           })
-          // this.$confirm('考试已结束!', '提示', {
-          //   confirmButtonText: '确定',
-          //   type: 'warning'
-          // }).then(() => {
-          //   this.finish=false;
-          //   this.$router.push({path:'/paper/exam'});
-          // }).catch(() => {
-          //   this.finish=false;
-          //   this.$router.push({path:'/paper/exam'});
-          // });
         }
       }, 1000)
     },
@@ -135,16 +138,13 @@
       },
       saveForm(){
         let params = JSON.parse(JSON.stringify(this.formData));
-        let NotAnswer=[];
         let arrValues = [];
         for(let key in params){
-          if(params[key] == null || params[key].length === 0){
-            NotAnswer.push(key);
-          }
           const quest = this.questList.filter(v => v.id === key)[0]
+          console.log(quest);
           if (quest.baseType === 1) {
             let score = 0
-            if (params[key] && quest.optionAnswer.toString() === params[key].toString()) {
+            if (quest.optionAnswer.toString() === params[key].toString()) {
               score = quest.score;
             }
             arrValues.push({
@@ -155,7 +155,8 @@
           }
           if (quest.baseType === 2) {
             let score = 0
-            if (params[key][0] && quest.optionAnswer.sort().toString() === params[key].sort().toString()) {
+            if (quest.optionAnswer.sort().toString() === params[key].sort().toString()) {
+              console.log(12346)
               score = quest.score;
             }
             arrValues.push({
@@ -196,11 +197,12 @@
             })
           }
         }
-        let objScore=0;
-        arrValues.forEach( item =>{
+        let objScore = 0;
+        console.log(arrValues);
+        arrValues.forEach(item => {
           objScore += item.score
         });
-        let postData={
+        let postData = {
           paperResultAnswerList: arrValues,
           objScore: objScore
         };
@@ -210,14 +212,33 @@
           }
         })
       },
-      submitForm: function () {
+      handleSheet() {
         let params = Object.assign({}, this.formData);
-        let NotAnswer=[];
-        let arrValues = [];
-        for(let key in params){
-          if(params[key] == null || params[key].length === 0){
+        const NotAnswer = [];
+        for (let key in params) {
+          if (params[key] == null || params[key].length === 0) {
             NotAnswer.push(key);
           }
+        }
+        this.sheetList = this.questList.map((v, i) => {
+          if (NotAnswer.includes(v.id)) {
+            return false
+          } else {
+            return true
+          }
+        })
+        this.answerSheetVisiable = true;
+      },
+      submitForm: function () {
+        let params = Object.assign({}, this.formData);
+        let NotAnswer = [];
+        let arrValues = [];
+        for (let key in params) {
+          if (params[key] == null || params[key].length === 0) {
+            NotAnswer.push(key);
+          }
+          console.log(this.questList);
+          console.log(key);
           const quest = this.questList.filter(v => v.id === key)[0]
           // console.log(quest);
           if (quest.baseType === 1) {
@@ -255,9 +276,9 @@
           }
           if (quest.baseType === 4) {
             let score = 0
-            if(quest.blankAnswer.every((item,index) =>{
+            if (quest.blankAnswer.every((item, index) => {
               return this.checkResult(item) === this.checkResult(params[key][index])
-            })){
+            })) {
               score = quest.score;
             }
             arrValues.push({
@@ -266,7 +287,7 @@
               score: score
             })
           }
-          if(quest.baseType === 5){
+          if (quest.baseType === 5) {
             arrValues.push({
               questId: key,
               answerContent: params[key],
@@ -281,17 +302,17 @@
         this.$refs.formData.validate((valid) => {
           if (valid) {
             this.$confirm(`确认提交试卷吗？`, '提示', {}).then(() => {
-              let objScore=0;
-              arrValues.forEach( item =>{
+              let objScore = 0;
+              arrValues.forEach(item => {
                 objScore += item.score
               });
-              let postData={
+              let postData = {
                 status: 1,
                 paperResultAnswerList: arrValues,
                 objScore: objScore
               };
               updateBean('PaperResult', this.examInfo.paperResult.id, postData).then(res => {
-                if(res.retCode === 0){
+                if (res.retCode === 0) {
                   this.finish = false;
                   this.$message({
                     type: 'success',
@@ -299,10 +320,11 @@
                   })
                   this.$router.push('/paper/exam')
                 }
-              }).catch(err =>{
-                this.$message('提交更新失败！'+err)
+              }).catch(err => {
+                this.$message('提交更新失败！' + err)
               })
-            }).catch(() =>{})
+            }).catch(() => {
+            })
           }
         })
       },

@@ -2,8 +2,12 @@
   <el-form size="mini">
     <el-form-item label="题库">
       <el-select v-model="questBankId" :disabled="call===1">
-        <el-option :label="item.name" :value="item.id" v-for="item in questBankData"
-                   :key="item.id"></el-option>
+        <el-option
+          :label="item.name"
+          :value="item.id"
+          v-for="item in questBankData"
+          :key="item.id"
+        />
       </el-select>
     </el-form-item>
     <el-form-item label="状态">
@@ -18,8 +22,12 @@
     </el-form-item>
     <el-form-item label="知识点">
       <el-select v-model="topicValue" multiple filterable collapse-tags placeholder="请选择">
-        <el-option :label="item" :value="item" :key="item"
-                   v-for="item in topicData"></el-option>
+        <el-option
+          :label="item"
+          :value="item"
+          :key="item"
+          v-for="item in topicData"
+        />
       </el-select>
     </el-form-item>
     <el-form-item label="建题时间范围">

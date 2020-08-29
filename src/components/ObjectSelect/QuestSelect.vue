@@ -2,6 +2,7 @@
   <div>
     <div>
       <QuestFilter
+        v-if="selectType === 'quest'"
         ref="questId"
         :questBankData = "questBankData"
         :topicData = "topicData"
@@ -11,6 +12,18 @@
         @closeChapterType="closeChapterType"
         @showQuest="showQuest">
       </QuestFilter>
+      <el-select
+        v-model="paperId"
+        placeholder="请选择旧试卷"
+        @change="getPaperQuest"
+        v-else>
+        <el-option
+          v-for="item in paperList"
+          :key="item.id"
+          :label="item.name"
+          :value="item.id"
+        />
+      </el-select>
     </div>
     <el-table
       ref="multipleTable"
@@ -26,23 +39,35 @@
       >
       </el-table-column>
       <el-table-column
+        label="题目名称"
+        prop="content"
+        :formatter="htmlFilter"
+        min-width="200"
+        show-overflow-tooltip>
+      </el-table-column>
+      <el-table-column
         label="章节"
         prop="chapter"
+        min-width="80"
         show-overflow-tooltip>
       </el-table-column>
       <el-table-column
         label="题型"
         prop="type"
+        min-width="60"
         align="center">
       </el-table-column>
       <el-table-column
         label="难易度"
         prop="difficulty"
+        :formatter="difficultyFilter"
+        min-width="60"
         align="center">
       </el-table-column>
       <el-table-column
         label="分值"
         prop="score"
+        min-width="60"
         align="center">
       </el-table-column>
 <!--      <el-table-column-->
@@ -104,14 +129,15 @@
 </template>
 
 <script>
-  import {queryBean} from "@/http/base";
+  import { queryBean } from "@/http/base";
   import QuestFilter from "./QuestFilter";
+  import { htmlFilter, difficultyFilter } from '@/utils'
   export default {
-    components: {QuestFilter},
-    props:['questBankData','questBankId','chapterData','typeData','topicData','time'],
+    components: { QuestFilter },
+    props:[ 'questBankData', 'questBankId', 'chapterData', 'typeData', 'topicData', 'selectType'],
     data(){
       return{
-        detailVisible:false,
+        detailVisible: false,
         tableData:[],
         previewData:{},
         pageSize:10,
@@ -126,18 +152,30 @@
           difficulty:''
         },
         windowHeight: 400,
-        tableLoading: false
+        tableLoading: false,
+        paperId: '',
+        paperList: []
       }
     },
     created() {
+      if (this.selectType === 'paper') {
+        this.getPaper()
+      }
+    },
+    mounted() {
       this.windowHeight = document.body.clientHeight - 360;
     },
     methods:{
+      difficultyFilter(...args) {
+        return difficultyFilter(...args)
+      },
+      htmlFilter(...args) {
+        return htmlFilter(...args)
+      },
       closeChapterType(val) {
         this.tableLoading = val
       },
       toggleSelection(rows) {
-        console.log(rows);
         if (rows) {
           rows.forEach(row => {
             this.$refs.multipleTable.toggleRowSelection(row);
@@ -149,41 +187,34 @@
       handleSelectionChange(val) {
         this.multipleSelection = val;
       },
-      getTableData:function() {
-        let condition = {
+      getPaper() {
+        const condition = {
           questBankId: this.questBankId
         };
-        if (this.time && this.time.length > 0) {
-          condition['insetDt$bt'] = this.time
-        } else {
-          delete condition['insetDt$bt'];
-        }
-        if (this.formData.chapter.length > 0) {
-          condition.chapter = this.formData.chapter
-        } else {
-          delete condition.chapter;
-        }
-        if (this.formData.type.length > 0) {
-          condition.type = this.formData.type
-        } else {
-          delete condition.type;
-        }
-        if (this.formData.difficulty) {
-          condition.difficulty = this.formData.difficulty
-        } else {
-          delete condition.difficulty;
-        }
-        let pageInfo = {
+        const pageInfo = {
           pageNum: this.pageno,
           sort: {
             insertDt: -1
           }
         };
-        queryBean('Quest', condition, pageInfo).then(res => {
+        queryBean('Paper', condition, pageInfo).then(res => {
           if (res.retCode === 0) {
-            this.tableData = res.bean.data;
-            this.total = res.bean.total;
+            this.paperList = res.bean.data
           }
+        })
+      },
+      getPaperQuest(val) {
+        this.tableLoading = true
+        queryBean('PaperQuest', { paperId: val }).then(res => {
+          if (res.retCode === 0) {
+            this.tableData = res.bean.data.map(v => {
+              const obj = Object.assign(v.quest, v)
+              obj.id = v.questId
+              return obj
+            })
+          }
+        }).finally(() => {
+          this.tableLoading = false
         })
       },
       showQuest:function(res){
@@ -195,7 +226,7 @@
           this.$message('请选择试题')
         }else{
           let tableData = this.multipleSelection;
-          this.$emit('changeQuest',tableData);
+          this.$emit('changeQuest', tableData);
         }
       },
       previewHandle:function(index,row){

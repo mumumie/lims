@@ -72,7 +72,7 @@
                   <div v-html="ite.subjectAnswer"></div>
                 </div>
               </div>
-              <div v-if="ite.baseType === 5 && paperResult.status === 1" style="line-height: 38px;font-weight: 700;" >
+              <div v-if="ite.baseType === 5 && (paperResult.status === 1 || paperResult.status === 0)" style="line-height: 38px;font-weight: 700;" >
                 <el-row>
                   <el-col :span="3">请打分：</el-col>
                   <el-col :span="12">
@@ -110,14 +110,14 @@
 
           </div>
           <div style="line-height: 30px;height:30px;padding-left:20px;">
-            <el-checkbox v-model="paperResult.anonymous" v-if="paperResult.status === 1">是否匿名</el-checkbox>
+            <el-checkbox v-model="paperResult.anonymous" v-if="paperResult.status === 1 || paperResult.status === 0">是否匿名</el-checkbox>
             <p v-if="paperResult.status === 2 && !paperResult.anonymous">阅卷人：{{paperResult.reviewer.nickname}}</p>
           </div>
         </div>
         <div slot="footer" class="dialog-footer">
 <!--          <el-button :size="size" @click.native="isShowAnswer = !isShowAnswer">{{isShowAnswer?'隐藏答案':'显示答案'}}</el-button>-->
 <!--          <el-button :size="size" @click.native="$print($refs.print)">打印</el-button>-->
-          <el-button :size="size" @click.native="submitRead" v-if="paperResult.status === 1">批阅</el-button>
+          <el-button :size="size" @click.native="submitRead" v-if="paperResult.status === 1 || paperResult.status === 0">批阅</el-button>
           <el-button :size="size" @click.native="paperVisible = false">{{$t('action.cancel')}}</el-button>
         </div>
       </el-dialog>

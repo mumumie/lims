@@ -83,7 +83,8 @@
       </div>
       <el-form-item label="试题列表">
         <div>
-          <el-button icon="el-icon-circle-plus-outline" @click="addQuestId">题目选择器</el-button>
+          <el-button icon="el-icon-circle-plus-outline" @click="addQuestId('quest')">题目选择器</el-button>
+          <el-button icon="el-icon-circle-plus-outline" @click="addQuestId('paper')">试卷选择器</el-button>
           <el-button icon="el-icon-delete" type="danger" @click="deleteQuestId">批量删除</el-button>
         </div>
         <el-table
@@ -113,12 +114,8 @@
             header-align="center"
             prop="content"
             label="题干"
-            show-overflow-tooltip>
-            <template slot-scope="scope">
-              <div v-html="scope.row.content"></div>
-            </template>
-          </el-table-column>
-
+            :formatter="htmlFilter"
+            show-overflow-tooltip />
           <el-table-column
             header-align="center"
             prop="difficulty"
@@ -283,16 +280,20 @@
 
     <el-drawer
       :visible.sync="questVisible"
-      append-to-body :with-header="false"
-      direction="rtl" :size="'50%'">
-      <div style="margin-left:10px">
+      append-to-body
+      :with-header="false"
+      direction="rtl"
+      :size="'50%'">
+      <div style="padding:20px;">
         <QuestSelect
           ref="questId"
+          v-if="questVisible"
           :questBankData = "questBankData"
           :questBankId="formData.questBankId"
           :chapterData="chapterData"
           :typeData="typeData"
-          :topicData = "topicData"
+          :topicData="topicData"
+          :selectType="selectType"
           @changeQuest="changeQuest">
         </QuestSelect>
       </div>
@@ -303,6 +304,7 @@
 <script>
   import {addBean, queryBean, addBatchBean} from "@/http/base";
   import QuestSelect from "@/components/ObjectSelect/QuestSelect";
+  import { htmlFilter } from '@/utils'
   export default {
     name: "Manual",
     components: {
@@ -377,7 +379,8 @@
         scoreData: [],
         topicData:[],
         selectList: [],
-        studentList: []
+        studentList: [],
+        selectType: ''
       }
     },
     watch: {
@@ -404,6 +407,9 @@
       this.findDeptTree();
     },
     methods: {
+      htmlFilter(...args) {
+        return htmlFilter(...args)
+      },
       handleSelectionChange(val) {
         this.selectList = val.map(v => v.id);
       },
@@ -522,7 +528,7 @@
         this.detailVisible = true;
       },
       //添加题目
-      addQuestId: function () {
+      addQuestId(type) {
         if (!this.formData.questBankId) {
           this.$message({
             type: 'error',
@@ -530,10 +536,8 @@
           })
           return false;
         }
-        this.questVisible = true
-        // this.$nextTick(()=>{
-        //   this.$refs.questId.getTableData();
-        // })
+        this.selectType = type;
+        this.questVisible = true;
       },
       // 批量删除题目
       deleteQuestId() {

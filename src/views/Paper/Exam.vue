@@ -59,7 +59,7 @@
         append-to-body
         :visible.sync="paperVisible">
         <div style="float:right;">
-          <el-button type="primary" @click="accuracyVisible = true" size="mini">查看答题准确率</el-button>
+          <el-button type="primary" @click="accuracyVisible = true" size="mini">查看试题准确率</el-button>
           <!--准确率界面-->
           <accuracy-rate
             :switchBtn="accuracyVisible"
@@ -148,7 +148,7 @@
   import KtTable from "@/views/Core/PaperExamTable"
   import KtButton from "@/views/Core/KtButton"
   import { format } from "@/utils/datetime"
-  import {addBean, queryBean, updateBean, getBean, aggregate} from "@/http/base";
+  import { addBean, queryBean, updateBean, getBean, aggregate } from "@/http/base";
   import AccuracyRate from "./template/accuracy-rate"
   import {mapTree} from "../../utils";
   export default {

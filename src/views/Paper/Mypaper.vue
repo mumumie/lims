@@ -111,6 +111,16 @@
         title="查看试卷"
         append-to-body
         :visible.sync="paperVisible">
+        <div style="float:right;margin-top:-30px;">
+          <el-button type="primary" @click="accuracyVisible = true" size="mini">查看试题准确率</el-button>
+          <!--准确率界面-->
+          <accuracy-rate
+            :switchBtn="accuracyVisible"
+            :list="accuracyData"
+            v-if="accuracyVisible"
+            @close="accuracyVisible = false"
+          />
+        </div>
         <div class="paper_box" ref="print" v-if="scoreData.length > 0">
           <div class="paper_count">
             <p>{{`${paperInfo.createAnnual}-${paperInfo.createAnnual + 1}学年 ${paperInfo.semester} 《${paperInfo.questBank.name}》${paperInfo.name}`}}</p>
@@ -247,25 +257,22 @@
   import PopupTreeInput from "@/components/PopupTreeInput"
   import KtTable from "@/views/Core/PaperTable"
   import KtButton from "@/views/Core/KtButton"
-  import EditQuest from "@/views/Tq/EditQuest"
   import ExamResult from "./ExamResult"
-  import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
   import { format } from "@/utils/datetime"
   import { baseUrl } from "@/utils/global"
-  import {addBean, queryBean, updateBean,findMyExamPaper,aggregate} from "@/http/base";
+  import { addBean, queryBean, updateBean, findMyExamPaper, aggregate } from "@/http/base";
   import mEcharts from '@/components/Echarts/EchartsPie'
-  import {mapTree} from "../../utils";
-  import {queryCount} from "../../http/base";
+  import AccuracyRate from "./template/accuracy-rate"
+  import { mapTree } from "../../utils";
   export default {
     name:'mypaper',
     components:{
       PopupTreeInput,
       KtTable,
       KtButton,
-      TableColumnFilterDialog,
-      EditQuest,
       mEcharts,
-      ExamResult
+      ExamResult,
+      AccuracyRate
     },
     data() {
       return {
@@ -286,6 +293,8 @@
         editVisible: false, // 新增编辑界面是否显示
         statisticsVisible:false,
         editLoading: false,
+        accuracyVisible: false,
+        accuracyData: [],
         loading:false,
         questBankData: [],
         createAnnualData:[
@@ -540,40 +549,6 @@
             }
             this.statisticsVisible = true;
           })
-
-            // aggregate("PaperResult", "scoreDegree", {
-            //   "status":2,
-            //   "paperId": paperId
-            // }).then(res => {
-            //
-            // });
-
-          /*let passList = [];
-          let passScore = params.row.passScore
-          queryCount("PaperResult", {
-            "paperId": paperId,
-            "totalScore$gte": passScore,
-
-          }).then(res=>{
-            passList.push({
-              "name": '不及格',
-              "value": '及格'
-            })
-
-          })*/
-
-          // aggregate("Quest", "chapter", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
-          // aggregate("Quest", "type", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
-          // aggregate("Quest", "difficulty", condition).then(res => {
-          //   mapTree(res.bean, {"name": "_id", "value": "count"})
-          //   console.log(res.bean)
-          // });
         })
       },
       getEchartData(val){
@@ -625,7 +600,6 @@
       },
       // 显示预览界面
       handleDetail: function (params) {
-        console.log(params.row);
         this.paperInfo = params.row;
         let postData = {
           paperId: params.row.id
@@ -648,6 +622,7 @@
             }
           });
           let scoreData=[];
+          this.accuracyData = res.bean.data
           let questList = res.bean.data.map(item =>{
             item.quest.score = item.score
             return item.quest;
