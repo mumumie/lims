@@ -6,10 +6,13 @@
       </router-link>
       <mt-button icon="more" slot="right"  @click="questBankShow = !questBankShow"></mt-button>
     </mt-header>
+    <div class="current-box">
+      <span>{{currentNum}} / {{practiceTotal}}</span>
+    </div>
     <div v-if="practiceData.length>0">
       <swiper :options="swiperOption" ref="mySwiper" class="swiperOption" >
         <!-- slides -->
-        <swiper-slide  style="min-height:450px;" v-for="previewData in practiceData" :key="previewData.id">
+        <swiper-slide  style="min-height: calc(100vh - 40px - 2.8rem);" v-for="previewData in practiceData" :key="previewData.id">
           <div class="practice_box">
             <div class="practice_box_title">
               <div class="practice_type">
@@ -39,7 +42,7 @@
             </div>
             <div v-if="previewData.baseType === 4">
               <div class="blank_option" v-for="(bAns,bI) in previewData.blankAnswer" :key="bI">
-                <input type="text" :placeholder="'请填入答案'+(bI+1)" v-model="previewData.bAnswer[bI]" @change="bAnswerChange(previewData)" :disabled="previewData.show">
+                <input type="text" :placeholder="'请填入答案'+(bI+1)" v-model="previewData.bAnswer[bI]" @input="bAnswerChange(previewData)" :disabled="previewData.show">
               </div>
             </div>
             <div class="practice_answer" @click="submitAnswer(previewData)" v-if="!previewData.show && previewData.answer">{{previewData.baseType === 5?'查看答案':'提交答案'}}</div>
@@ -77,7 +80,7 @@
           </div>
         </swiper-slide>
         <!-- Optional controls -->
-        <div class="swiper-pagination"  slot="pagination"></div>
+<!--        <div class="swiper-pagination"  slot="pagination"></div>-->
       </swiper>
     </div>
     <div v-else class="noPractice_box" v-loading="practiceLoading">
@@ -124,6 +127,7 @@
   import 'swiper/dist/css/swiper.css'
   import { getBean, queryBean, addBean, updateBean } from "@/http/base";
   import { swiper, swiperSlide } from 'vue-awesome-swiper'
+  let current =  1
   export default {
     components: {
       swiper,
@@ -138,7 +142,12 @@
             type: 'fraction'
           },
           on:{
-            slideChangeTransitionEnd: function(swiper){
+            slideChangeTransitionEnd: () => {
+              let swiper = this.$refs.mySwiper.swiper;
+              this.currentNum = swiper.activeIndex + 1;
+              if (this.currentNum === this.page * 10 && this.currentNum < this.practiceTotal) {
+                this.getPractice(this.pathIndex, ++this.page);
+              }
             },
           },
 
@@ -150,148 +159,141 @@
         questBankShow:false,
         questType:[],
         chapter:[],
-        practiceLoading: false
+        practiceLoading: false,
+        page: 1,
+        practiceTotal: 100,
+        currentNum: 1,
+        practiceResultList: []
       }
     },
+    computed: {
+      swiper() {
+        return this.$refs.mySwiper.swiper
+      },
+      p_questType() {
+        const questType = this.questType.filter(v => v.isSelect)
+        return questType.map(v => v.value)
+      },
+      p_chapter() {
+        const chapter = this.chapter.filter(v => v.isSelect)
+        return chapter.map(v => v.value)
+      }
+    },
+    created() {
+      this.getResult(1).then(() => {
+        this.getPractice(1);
+      })
+      this.questType = this.$route.query.questType.split(',').map(v =>{
+        return {
+          value:v,
+          isSelect:false
+        }
+      })
+      this.chapter = this.$route.query.chapter.split(',').map(v =>{
+        return {
+          value:v,
+          isSelect:false
+        }
+      })
+    },
     methods: {
-      getPractice(){
+      getResult(i) {
         this.practiceLoading = true
         let postData = {
-          userid:sessionStorage.getItem('userid'),
-          practiceId:this.$route.query.id
+          userid: sessionStorage.getItem('userid'),
+          practiceId: this.$route.query.id,
+          status$in: [1, 2]
         }
-        queryBean('PracticeResult',postData).then(res =>{
-          if(res.retCode === 0){
-            let idList = res.bean.data.map(item =>{
-              return item.questId;
-            })
-            let chapter = this.$route.query.chapter.split(',')
-            let questType = this.$route.query.questType.split(',')
-            let condition = {
-              questBankId:this.$route.query.questBankId,
-              chapter$in:chapter,
-              type$in:questType,
-              id$nin:idList,
-              status:1
+
+        if (i === 1) {
+          postData['status$in'] = [1, 2]//已练习的
+        } else if (i === 2) {
+          postData['status$in'] = [1, 2]//已练习的
+        } else if (i === 3) {
+          postData['status$in'] = [2] //答错误的
+        }
+        return new Promise((resolve, reject) => {
+          queryBean('PracticeResult', postData).then(res => {
+            if(res.retCode === 0) {
+              this.practiceResultList = res.bean.data;
+              resolve()
             }
-            queryBean("Quest",condition).then(result => {
-              this.practiceData  = result.bean.data.map(item =>{
-                item.show = false;
-                item.oAnswer = [];
-                item.option.forEach((v,i) =>{
-                  this.$set(item.oAnswer,i,false);
-                })
-                item.bAnswer=item.blankAnswer.map(v =>{
-                  return ''
-                });
-                if(item.baseType === 5){
-                  item.answer = true;
-                }else{
-                  item.answer = false;
+          }).catch(() => {
+            reject()
+          })
+        })
+      },
+      getPractice(i, page = 1) {
+        let idList = this.practiceResultList.map(item => {
+          return item.questId;
+        });
+        let chapter = this.$route.query.chapter.split(',')
+        let questType = this.$route.query.questType.split(',')
+        let condition = {
+          questBankId: this.$route.query.questBankId,
+          chapter$in: this.p_chapter.length > 0 ? this.p_chapter : chapter,
+          type$in: this.p_questType.length > 0 ? this.p_questType : questType,
+          status: 1
+        };
+        if (i === 1) {
+          condition['id$nin'] = idList //剔除已练习的
+        } else if (i === 2) {
+          condition['id$in'] = idList//仅已练习的
+        } else if (i === 3) {
+          condition['id$in'] = idList //答错误的
+        }
+
+        const pageInfo = {
+          pageNum: page,
+          pageSize: 10
+        };
+        this.practiceLoading = true;
+        queryBean("Quest", condition, pageInfo).then(result => {
+          this.practiceTotal = result.bean.total
+          const practiceData = result.bean.data.map(item =>{
+            item.oAnswer = [];
+            if (this.pathIndex === 2) {
+              const row = this.practiceResultList.find(v => v.questId === item.id)
+              item.option.forEach((v, i) => {
+                if (row.optionAnswer.includes(i)) {
+                  this.$set(item.oAnswer, i, true);
+                } else {
+                  this.$set(item.oAnswer, i, false);
                 }
-                return item;
-              })
-              this.practiceLoading = false
-            }).catch(() =>{
-              this.practiceLoading = false
-            })
-          }
-
-        })
-
-      },
-      getSeletPractice(questType, chapter){
-        let postData = {
-          userid:sessionStorage.getItem('userid'),
-          practiceId:this.$route.query.id,
-        }
-        queryBean('PracticeResult', postData).then(res =>{
-          if(res.retCode === 0){
-            let idList = res.bean.data.map(item =>{
-              return item.questId;
-            })
-            let condition = {
-              questBankId:this.$route.query.questBankId,
-              chapter$in:chapter,
-              type$in:questType,
-              id$nin:idList,
-              status:1
-            }
-            queryBean("Quest",condition).then(result => {
-              this.practiceData  = result.bean.data.map(item =>{
-                item.show = false;
-                item.oAnswer = [];
-                item.option.forEach((v,i) =>{
-                  this.$set(item.oAnswer,i,false);
-                })
-                item.bAnswer = item.blankAnswer.map(v =>{
-                  return ''
-                });
-                if(item.baseType === 5){
-                  item.answer = true;
-                }else{
-                  item.answer = false;
-                }
-                return item;
-              })
-            })
-          }
-        })
-      },
-      getAlreadyPractice(){
-        let postData={
-          userid:sessionStorage.getItem('userid'),
-          practiceId:this.$route.query.id
-        }
-        queryBean('PracticeResult',postData).then(res =>{
-          if(res.retCode === 0){
-            this.practiceData  = res.bean.data.map(item =>{
-              let obj = Object.assign({},item.quest)
-              obj.show = true;
-              obj.oAnswer = []
-              if(item.quest.baseType === 1 || item.quest.baseType === 2){
-                obj.oAnswer = item.quest.option.map(v =>{
-                  return false;
-                });
-                item.optionAnswer.forEach(v =>{
-                  obj.oAnswer[v] = true;
-                })
-              }
-              obj.tAnswer=item.tfAnswer;
-              obj.bAnswer=item.blankAnswer;
-              obj.answer = false;
-              return obj;
-            })
-
-          }
-
-        })
-
-      },
-      getFalsePractice(){
-        let postData={
-          userid:sessionStorage.getItem('userid'),
-          practiceId:this.$route.query.id,
-          status:2
-        }
-        queryBean('PracticeResult',postData).then(res =>{
-          if(res.retCode === 0){
-            this.practiceData  = res.bean.data.map(item =>{
-              let obj = item.quest
-              obj.show = false;
-              obj.oAnswer = item.quest.option.map(v =>{
-                return false;
               });
-              obj.tAnswer=[];
-              obj.bAnswer=[];
-              obj.answer = false;
-              obj.practiceResultId = item.id;
-              return obj;
-            })
+              item.bAnswer = row.blankAnswer
+              item.tAnswer = row.tfAnswer
+              item.answer = true;
+              item.show = true;
+            } else {
+              if(item.baseType === 5){
+                item.answer = true;
+              }else{
+                item.answer = false;
+              }
+              item.show = false;
+              item.option.forEach((v, i) =>{
+                this.$set(item.oAnswer, i, false);
+              })
+              item.bAnswer = item.blankAnswer.map(v =>{
+                return ''
+              });
+              item.tAnswer = null
+              if (this.pathIndex === 3) {
+                const row = this.practiceResultList.find(v => v.questId === item.id)
+                item.practiceResultId = row.id;
+              }
+            }
+            return item;
+          })
+          if (page === 1) {
+            this.practiceData = practiceData
+          } else {
+            this.practiceData = this.practiceData.concat(practiceData)
           }
-
+        }).finally(() =>{
+          this.practiceLoading = false
         })
-
       },
       toPath(index){
         this.pathIndex = index;
@@ -301,13 +303,7 @@
         this.chapter.map(v =>{
           v.isSelect = false;
         })
-        if(index === 1){
-          this.getPractice();
-        }else if(index === 2){
-          this.getAlreadyPractice();
-        }else if(index === 3){
-          this.getFalsePractice();
-        }
+        this.submitSelectHandle()
       },
       optionHandle(row,index){
         if(!row.show){
@@ -392,11 +388,10 @@
           return false;
         }
       },
-      submitAnswer(row){
-
+      submitAnswer(row) {
         let doc = {
           practiceId: this.$route.query.id,
-          questId:row.id
+          questId: row.id
         };
         if(row.baseType === 1 || row.baseType === 2){
           let optionAnswer = [];
@@ -419,13 +414,13 @@
           doc.status = 2;
         }
         if(this.pathIndex === 1){
-          addBean('PracticeResult',doc).then(res =>{
+          addBean('PracticeResult', doc).then(res =>{
             if(res.retCode === 0){
               row.show = true;
             }
           })
         }else if(this.pathIndex === 3){
-          updateBean('PracticeResult',row.practiceResultId,doc).then(res =>{
+          updateBean('PracticeResult', row.practiceResultId, doc).then(res =>{
             if(res.retCode === 0){
               row.show = true;
             }
@@ -437,45 +432,15 @@
         let isSelect = row.isSelect;
         row.isSelect = !isSelect;
       },
-      submitSelectHandle(){
-        if(this.pathIndex === 1){
-          let questType = [];
-          let chapter = [];
-          this.questType.forEach(v =>{
-            if (v.isSelect === true) {
-              questType.push(v.value)
-            }
-          })
-          if (questType.length === 0) {
-            questType = this.$route.query.questType.split(',')
-          }
-          this.chapter.forEach(v =>{
-            if (v.isSelect === true) {
-              chapter.push(v.value)
-            }
-          })
-          if (chapter.length === 0) {
-            chapter = this.$route.query.chapter.split(',')
-          }
-          this.getSeletPractice(questType,chapter)
-        }
+      submitSelectHandle() {
+        this.page = 1
+        this.currentNum = 1
+        this.swiper.slideTo(0, false)
+        this.getResult(this.pathIndex).then(() => {
+          this.getPractice(this.pathIndex, 1)
+        })
         this.questBankShow = false;
       },
-    },
-    created() {
-      this.getPractice();
-      this.questType = this.$route.query.questType.split(',').map(v =>{
-        return {
-          value:v,
-          isSelect:false
-        }
-      })
-      this.chapter = this.$route.query.chapter.split(',').map(v =>{
-        return {
-          value:v,
-          isSelect:false
-        }
-      })
     }
   }
 </script>
@@ -670,5 +635,12 @@
     font-weight: bold;
     cursor: pointer;
     margin-top:0.3rem;
+  }
+  .current-box{
+    line-height: 0.8rem;
+    text-align: right;
+    font-size: 0.4rem;
+    padding: 0 0.2rem;
+    border-bottom: 1px solid #e0e0e0;
   }
 </style>

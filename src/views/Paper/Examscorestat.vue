@@ -103,6 +103,7 @@
         this.columns = [
           /*{prop:"id", label:"ID", minWidth:50},*/
           {prop:"tag", label:"统计类型", minWidth:120, formatter: this.filterTag },
+          {prop:"groupName", label:"类型", minWidth:120},
           {prop:"answerTime", label:"答题次数", minWidth:120},
           {prop:"correctTime", label:"正确次数", minWidth:120},
           {prop:"correctRate", label:"正确率", minWidth:120},

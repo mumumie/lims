@@ -6,17 +6,20 @@
     :close-on-click-modal="false"
     :destroy-on-close="true"
     append-to-body
-    width="60%">
-    <el-col :span="6"><el-input v-model="keyword" placeholder="请输入内容" size="mini"></el-input></el-col>
-    <el-col :span="6">
+    width="600px">
+    <div style="margin-bottom: 20px;">
+      <el-input v-model="keyword" placeholder="请输入学生名称" size="mini" style="width:200px;"></el-input>
       <el-button type="success" @click="handleKeyword" size="mini">搜索</el-button>
-<!--      <el-button type="danger" @click="addHandle" size="mini">增加</el-button>-->
-    </el-col>
+    </div>
     <el-table
       ref="multipleTable"
       :data="tableData"
       tooltip-effect="dark"
       style="width: 100%"
+      height="400px"
+      size="mini"
+      stripe
+      @select="handleSingleChange"
       @selection-change="handleSelectionChange">
       <el-table-column
         type="selection"
@@ -25,83 +28,103 @@
       <el-table-column
         label="学生姓名"
         prop="nickname"
-        align="center">
-      </el-table-column>
+        show-overflow-tooltip
+      />
       <el-table-column
         label="学生账号"
         prop="name"
-        show-overflow-tooltip>
-      </el-table-column>
+        show-overflow-tooltip
+      />
       <el-table-column
         label="所属用户组"
-        prop="deptment.name"
-        align="center">
-      </el-table-column>
+        prop="deptName"
+        align="center"
+      />
     </el-table>
-    <el-pagination
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :hide-on-single-page="true"
-      :current-page.sync="currentPage"
-      :page-size="pageSize"
-      layout="prev, pager, next, jumper"
-      :total="total">
-    </el-pagination>
-    <div style="margin-top: 20px">
-      <el-button @click="addTeacherId">添加</el-button>
-      <el-button @click="handleClose">取消选择</el-button>
+<!--    <el-pagination-->
+<!--      @size-change="handleSizeChange"-->
+<!--      @current-change="handleCurrentChange"-->
+<!--      :hide-on-single-page="true"-->
+<!--      :current-page.sync="currentPage"-->
+<!--      :page-size="pageSize"-->
+<!--      layout="prev, pager, next, jumper"-->
+<!--      :total="total">-->
+<!--    </el-pagination>-->
+    <div slot="footer">
+      <el-button @click="addTeacherId" size="mini" type="primary">确定</el-button>
+      <el-button @click="handleClose" size="mini">取消</el-button>
     </div>
 
   </el-dialog>
 </template>
 
 <script>
-  import {queryBean} from "@/http/base";
+  import { queryBean } from "@/http/base";
   export default {
     name: "studentSelect",
-    props:['dialogVisible'],
+    props:['dialogVisible', 'studentList'],
     data(){
       return{
+        allStudent: [],
         tableData:[],
         keyword:'',
         pageSize:10,
         currentPage:1,
         pageno:0,
         total:0,
-        multipleSelection:[],
+        multipleSelection: this.studentList,
+        currentSelect: []
       }
+    },
+    mounted() {
+      this.getTableData().then(data => {
+        this.allStudent = data
+      })
     },
     methods:{
       toggleSelection(rows) {
-        if (rows) {
-          rows.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row);
-          });
+        this.currentSelect = []
+        rows.forEach(row => {
+          if (this.multipleSelection.includes(row.id)) {
+            this.$nextTick(() => {
+              this.$refs.multipleTable.toggleRowSelection(row, true);
+            })
+          }
+        });
+      },
+      handleSingleChange(val, row) {
+        if (val.includes(row)) {
+          this.multipleSelection.push(row.id)
         } else {
-          this.$refs.multipleTable.clearSelection();
+          this.multipleSelection = this.multipleSelection.filter(v => v !== row.id)
         }
       },
       handleSelectionChange(val) {
-        this.multipleSelection = val;
+        // this.multipleSelection = val;
       },
-      getTableData:function(){
-        let condition={
-          'roleIdList':["5e85aeee0efa842d5f5dfd82"],
-          'nickname$regex':this.keyword
+      getTableData() {
+        let condition = {
+          roleIdList$in: ["5e85aeee0efa842d5f5dfd82"],
+          nickname$regex: this.keyword
         };
-        let pageInfo={
-          pageSize:this.pageSize,
-          pageNum:this.pageno,
+        let pageInfo = {
+          pageNum: 0,
           sort: {
             insertDt: -1
           }
         };
-        queryBean('Account', condition,pageInfo).then(res =>{
-          if(res.retCode===0){
-            this.tableData=res.bean.data;
-            this.total=res.bean.total;
-          }
+        const vm = this
+        return new Promise((resolve, reject) => {
+          queryBean('Account', condition, pageInfo).then(res => {
+            if (res.retCode === 0) {
+              vm.tableData = res.bean.data;
+              vm.toggleSelection(vm.tableData);
+              vm.total = res.bean.total;
+              resolve(res.bean.data)
+            }
+          })
         })
+
       },
       handleSizeChange(val) {
         console.log(`每页 ${val} 条`);
@@ -122,15 +145,17 @@
         if (this.multipleSelection.length === 0) {
           this.$message('请选择教师')
         }else{
-          let tableData = this.multipleSelection;
-          this.$emit('changeTeacher',tableData);
+          let tableData = []
+          this.allStudent.map(v => {
+            if (this.multipleSelection.includes(v.id)) {
+              tableData.push(v)
+            }
+          })
+          this.$emit('changeTeacher', tableData);
           this.keyword='';
         }
 
       },
-    },
-    created(){
-
     }
   }
 </script>

@@ -49,6 +49,7 @@
     <forget-password
       :switchBtn="editVisible"
       v-if="editVisible"
+      :phone="user.phone"
       @close="editVisible = false"
     />
     <!--备份还原界面-->
@@ -74,7 +75,8 @@ export default {
         name: "admin",
         avatar: "@/assets/user.png",
         role: "超级管理员",
-        registeInfo: "注册时间：2018-12-25 "
+        registeInfo: "注册时间：2018-12-25 ",
+        phone: ''
       }
     }
   },

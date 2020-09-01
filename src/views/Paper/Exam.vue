@@ -58,7 +58,7 @@
         title="试卷结果"
         append-to-body
         :visible.sync="paperVisible">
-        <div style="float:right;">
+        <div style="float:right;margin-top:-30px;">
           <el-button type="primary" @click="accuracyVisible = true" size="mini">查看试题准确率</el-button>
           <!--准确率界面-->
           <accuracy-rate

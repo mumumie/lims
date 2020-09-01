@@ -69,9 +69,9 @@
         <div @click="submitPractice">开始自测</div>
       </div>
     </div>
-    <!--    选择课程-->
+    <!--    选择练习-->
     <div class="transition_box" :class="{active:questBankShow}">
-      <mt-header title="选择课程" style="z-index: 30;">
+      <mt-header title="选择练习" style="z-index: 30;">
         <mt-button slot="left" icon="back" @click="questBankShow = false">返回</mt-button>
       </mt-header>
       <div class="practice_list" @click="practiceSelect(item)" v-for="item in practiceData" :key="item.id">
@@ -96,8 +96,8 @@
       </div>
       <div v-else class="no_message">
         <div ><i class="el-icon-shopping-cart-1"></i></div>
-        <p>你还没有选择课程</p>
-<!--        <span>选择课程或者自测还得等待数据哦</span>-->
+        <p>你还没有选择练习</p>
+<!--        <span>选择练习或者自测还得等待数据哦</span>-->
       </div>
 
     </div>
@@ -113,8 +113,8 @@
       </div>
       <div v-else class="no_message">
         <div ><i class="el-icon-shopping-cart-1"></i></div>
-        <p>你还没有选择课程</p>
-        <!--        <span>选择课程或者自测还得等待数据哦</span>-->
+        <p>你还没有选择练习</p>
+        <!--        <span>选择练习或者自测还得等待数据哦</span>-->
       </div>
 
     </div>
@@ -157,7 +157,7 @@
       return{
         practiceData: [],
         formData:{
-          questBankName:'课程',
+          questBankName:'练习',
           questBankId:'',
           chapter:'章节',
           questType:'题型',
@@ -260,9 +260,9 @@
         return formatDataCode(time)
       },
       submitPractice(){
-        if(this.formData.questBankName === '课程'){
+        if(this.formData.questBankName === '练习'){
           this.$toast({
-            message: '请选择课程',
+            message: '请选择练习',
             iconClass: 'el-icon-document-delete'
           });
           return false;

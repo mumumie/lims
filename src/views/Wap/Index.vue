@@ -51,6 +51,7 @@
           </div>
           <div style="padding:0.2rem;">
             <mt-button type="default" size="small" plain style="width:100%;" @click="getExam(++examPages)" v-if="examData.length < examTotal">查看更多>></mt-button>
+            <mt-button type="default" size="small" style="width:100%;" v-else disabled>没有更多数据了</mt-button>
           </div>
         </mt-tab-container-item>
         <mt-tab-container-item id="2">
@@ -77,6 +78,7 @@
           </div>
           <div style="padding:0.2rem;">
             <mt-button type="default" size="small" plain style="width:100%;" @click="getPractice(++practicePages)" v-if="practiceData.length < practiceTotal">查看更多>></mt-button>
+            <mt-button type="default" size="small" style="width:100%;" v-else disabled>没有更多数据了</mt-button>
           </div>
         </mt-tab-container-item>
       </mt-tab-container>

@@ -88,7 +88,9 @@
       <StudentSelect
         ref="myTeacherId"
         :dialogVisible="addTeacherVisible"
+        v-if="addTeacherVisible"
         @teacherVisible="teacherVisible"
+        :studentList="dataForm.studentId"
         @changeTeacher="changeTeacher">
       </StudentSelect>
       <CourseTeachSelect
@@ -256,7 +258,8 @@
           name: '',
           nickname: '',
           annual:'',
-          semester:''
+          semester: '',
+          studentId: []
         }
       },
       // 显示编辑界面
@@ -276,11 +279,10 @@
       },
       //添加学生
       addTeacherId:function(){
-        this.addTeacherVisible=true;
-        this.$refs.myTeacherId.getTableData();
+        this.addTeacherVisible = true;
       },
       changeTeacher:function(val){
-        this.addTeacherVisible=false;
+        this.addTeacherVisible = false;
         this.dataForm.name = val.map(v =>{
           return v.nickname;
         }).toString();

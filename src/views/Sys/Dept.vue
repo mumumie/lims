@@ -343,15 +343,16 @@
       // 处理表格列过滤显示
       initColumns: function () {
         this.columns = [
-          /*{prop:"id", label:"ID", minWidth:50},*/
-          {prop:"name", label:"名称", minWidth:120},
-          {prop:"type", label:"类型", minWidth:100, formatter: (row) =>{
+
+          {prop:"name", label:"名称", minWidth:60},
+          {prop:"type", label:"类型", minWidth:40, formatter: (row) =>{
               if(row.type === 0) return '用户组';
               if(row.type === 1) return '班级';
               if(row.type === 3) return '客户';
               return '未知'
             }},
-          {prop:"parentName", label:"上级名称", minWidth:120},
+          {prop:"parentName", label:"上级名称", minWidth:60},
+          {prop:"id", label:"ID", minWidth:100},
           // {prop:"parentId", label:"上级ID", minWidth:120},
           // {prop:"status", label:"状态", minWidth:100 , formatter:(row) =>{
           //     if(row.status === 0) return '停用';

@@ -5,7 +5,7 @@
     <el-form :model="formData" label-width="150px" :rules="formDataRules" style="margin-top:20px;" ref="formData" :size="size" label-position="right">
       <div class="form-data-flex">
         <el-form-item label="题库" prop="questBankId">
-          <el-select v-model="formData.questBankId" placeholder="请选择课程" @change="questBankChangeHandle">
+          <el-select v-model="formData.questBankId" @change="questBankChangeHandle">
             <el-option :label="item.name" :value="item.id" v-for="item in questBankData"
                        :key="item.id"></el-option>
           </el-select>
@@ -28,6 +28,7 @@
             <el-option label="第二学期" value="第二学期"></el-option>
           </el-select>
         </el-form-item>
+
         <el-form-item label="考试日期" prop="date">
           <el-date-picker
             v-model="formData.date"
@@ -37,6 +38,7 @@
             placeholder="选择一个日期">
           </el-date-picker>
         </el-form-item>
+
         <el-form-item label="考试时间">
           <el-time-select
             placeholder="起始时间"
@@ -50,8 +52,13 @@
             v-model="formData.endTime"
             :picker-options="{start: '08:00',step: '00:05',end: '24:00',minTime: formData.startTime}">
           </el-time-select>
+          <el-tooltip class="item" effect="dark" content="试卷发布后,学生可在考试时间内参加考试，未开始或逾期则无法参加" placement="top">
+            <i class="el-icon-info"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="用户组范围" required>
+
+
+        <el-form-item label="用户组范围">
           <el-cascader
             :options="deptData"
             v-model="formData.deptmentIds"
@@ -59,17 +66,18 @@
             collapse-tags
             clearable>
           </el-cascader>
+          <el-tooltip class="item" effect="dark" content="选择一些用户组，使这些用户组下的学生能够参加这场考试" placement="top">
+            <i class="el-icon-info"></i>
+          </el-tooltip>
         </el-form-item>
+
         <el-form-item label="学生范围">
-          <el-select v-model="formData.studentIds" multiple collapse-tags placeholder="请选择学生">
-            <el-option
-              :label="`${item.nickname}(${item.name})`"
-              :value="item.id"
-              v-for="item in studentList"
-              :key="item.id"
-            />
-          </el-select>
+          <el-input v-model="formData.studentNames" @focus="studentVisible = true" placeholder="请选择学生" style="width:193px;"></el-input>
+          <el-tooltip class="item" effect="dark" content="选择一些学生，参加这场考试" placement="top">
+            <i class="el-icon-info"></i>
+          </el-tooltip>
         </el-form-item>
+
         <el-form-item label="考试类型">
           <el-select v-model="formData.type" placeholder="请选择考试类型">
             <el-option
@@ -84,7 +92,9 @@
       <el-form-item label="试题列表">
         <div>
           <el-button icon="el-icon-circle-plus-outline" @click="addQuestId('quest')">题目选择器</el-button>
-          <el-button icon="el-icon-circle-plus-outline" @click="addQuestId('paper')">试卷选择器</el-button>
+          <el-tooltip content="复用旧试卷其中的题目">
+            <el-button icon="el-icon-circle-plus-outline" @click="addQuestId('paper')">试卷选择器</el-button>
+          </el-tooltip>
           <el-button icon="el-icon-delete" type="danger" @click="deleteQuestId">批量删除</el-button>
         </div>
         <el-table
@@ -183,8 +193,12 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="previewPaper">预览试卷</el-button>
-        <el-button type="primary" @click="submitManual(-1)">保存试卷</el-button>
-        <el-button type="primary" @click="submitManual(0)">保存并发布</el-button>
+        <el-tooltip content="将未编辑完成的试卷保存，但不发布">
+          <el-button type="primary" @click="submitManual(-1)">保存试卷</el-button>
+        </el-tooltip>
+        <el-tooltip content="立即发布试卷，学生可在考试时间内参加考试">
+          <el-button type="primary" @click="submitManual(0)">保存并发布</el-button>
+        </el-tooltip>
       </el-form-item>
       <!--    详情展示弹框-->
       <el-dialog
@@ -276,6 +290,15 @@
           <el-button :size="size" @click.native="paperVisible = false">{{$t('action.cancel')}}</el-button>
         </div>
       </el-dialog>
+<!--      学生选择器-->
+      <student-select
+        ref="myTeacherId"
+        :dialogVisible="studentVisible"
+        :studentList="formData.studentIds"
+        v-if="studentVisible"
+        @teacherVisible="studentVisible = false"
+        @changeTeacher="changeTeacher"
+      />
     </el-form>
 
     <el-drawer
@@ -304,11 +327,13 @@
 <script>
   import {addBean, queryBean, addBatchBean} from "@/http/base";
   import QuestSelect from "@/components/ObjectSelect/QuestSelect";
+  import StudentSelect from "@/components/ObjectSelect/StudentSelect";
   import { htmlFilter } from '@/utils'
   export default {
     name: "Manual",
     components: {
       QuestSelect,
+      StudentSelect
     },
     data() {
       return {
@@ -316,6 +341,7 @@
         questVisible: false,
         detailVisible: false,
         paperVisible: false,
+        studentVisible: false,
         selectedDept: [],
         deptData: [],
         formData: {
@@ -331,6 +357,7 @@
           passScore: 0,
           deptmentIds: [],
           type: 1,
+          studentNames: '',
           studentIds: []
         },
         formDataRules: {
@@ -407,6 +434,11 @@
       this.findDeptTree();
     },
     methods: {
+      changeTeacher(val) {
+        this.studentVisible = false;
+        this.formData.studentNames = val.map(v => v.nickname).toString();
+        this.formData.studentIds = val.map(v => v.id)
+      },
       htmlFilter(...args) {
         return htmlFilter(...args)
       },

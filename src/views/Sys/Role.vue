@@ -97,7 +97,8 @@ export default {
 				{prop:"name", label:"角色名", minWidth:120},
 				{prop:"remark", label:"备注", minWidth:120},
 				// {prop:"createBy", label:"创建人", minWidth:120},
-				{prop:"insertDt", label:"创建时间", minWidth:120, formatter:this.dateFormat}
+				{prop:"insertDt", label:"创建时间", minWidth:120, formatter:this.dateFormat},
+        {prop:"id", label:"ID", minWidth:100},
 				// {prop:"lastUpdateBy", label:"更新人", minWidth:100},
 				// {prop:"lastUpdateTime", label:"更新时间", minWidth:120, formatter:this.dateFormat}
 			],

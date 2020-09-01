@@ -8,12 +8,6 @@
     :before-close="() => $emit('close')"
     append-to-body>
     <el-form :model="dataForm" label-width="100px" :rules="dataFormRules" ref="dataForm" size="mini" label-position="right">
-      <el-form-item label="新密码" prop="newPassword">
-        <el-input v-model="dataForm.newPassword" type="password" placeholder="请输入密码"></el-input>
-      </el-form-item>
-      <el-form-item label="确认密码" prop="newPassword2">
-        <el-input v-model="dataForm.newPassword2" type="password" placeholder="请输入密码"></el-input>
-      </el-form-item>
       <el-form-item label="手机号" prop="phone">
         <el-input v-model="dataForm.phone" placeholder="请输入手机号">
           <el-button slot="append" style="width:100px;" type="primary" @click="getCode" :disabled="msgCode !== '获取验证码'">{{ msgCode }}</el-button>
@@ -21,6 +15,12 @@
       </el-form-item>
       <el-form-item label="验证码" prop="code">
         <el-input v-model="dataForm.code" placeholder="请输入验证码"></el-input>
+      </el-form-item>
+      <el-form-item label="新密码" prop="newPassword">
+        <el-input v-model="dataForm.newPassword" type="password" placeholder="请输入密码"></el-input>
+      </el-form-item>
+      <el-form-item label="确认密码" prop="newPassword2">
+        <el-input v-model="dataForm.newPassword2" type="password" placeholder="请输入密码"></el-input>
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -38,6 +38,10 @@
     props: {
       switchBtn: {
         type: Boolean
+      },
+      phone: {
+        type: String,
+        default: ''
       }
     },
     data() {
@@ -67,7 +71,7 @@
         dataForm: {
           newPassword: '',
           newPassword2: '',
-          phone: '',
+          phone: this.phone,
           code: ''
         },
         dataFormRules: {

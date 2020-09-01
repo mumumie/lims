@@ -20,3 +20,22 @@ p{margin:0}
 .fr-placeholder{
   margin-top: 0 !important;
 }
+
+/*dialog*/
+.el-dialog__header {
+  font-size: 18px;
+}
+.el-dialog__footer {
+  font-size: 14px;
+}
+/*message*/
+.el-message-box__wrapper {
+  font-size: 14px;
+}
+.el-message {
+  font-size: 14px;
+}
+/*el-popper*/
+.el-drawer__body {
+  font-size: 14px;
+}

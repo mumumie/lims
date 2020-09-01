@@ -111,7 +111,7 @@
     data() {
       return {
         chapterTypeVisible: false,
-        timeValue: [],
+        timeValue: null,
         chapterValue: [],
         questTypeValue: [],
         statusValue: [1],
@@ -139,11 +139,13 @@
         let baseCondition = {
           questBankId: this.questBankId,
           status$in: this.statusValue,
-          insertDt$bt: this.timeValue,
           difficulty$in: this.difficultyValue,
         }
         if (this.topicValue.length > 0) {
-          baseCondition['topic$in']=this.topicValue
+          baseCondition['topic$in'] = this.topicValue
+        }
+        if (this.timeValue) {
+          baseCondition['insertDt$bt'] = this.timeValue
         }
         return baseCondition
       }

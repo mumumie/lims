@@ -38,7 +38,7 @@
           <kt-button icon="fa fa-plus" :label="$t('action.add')" perms="sys:user:add" type="primary" @click="handleAdd" />
         </el-form-item>
         <el-form-item>
-          <kt-button  icon="el-icon-upload" label="批量添加" perms="sys:user:add" type="primary" @click="handleBatchAdd" />
+          <kt-button  icon="el-icon-upload" label="批量添加" perms="sys:user:add" type="primary" @click="dialogVisibleBatch = true" />
         </el-form-item>
       </el-form>
     </div>
@@ -87,19 +87,13 @@
     </kt-table>
     <!--新增编辑界面-->
     <el-dialog :title="operation?'新增':'编辑'" width="40%" :visible.sync="dialogVisible" :close-on-click-modal="false" append-to-body>
-      <el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size" label-position="right" v-if="dialogVisible">
-        <el-form-item label="ID" prop="id" v-if="false">
-          <el-input v-model="dataForm.id" :disabled="true" auto-complete="off"></el-input>
-        </el-form-item>
+      <el-form :model="dataForm" label-width="80px" :rules="dataFormRules" ref="dataForm" :size="size" label-position="right">
         <el-form-item label="账号" prop="name">
           <el-input v-model="dataForm.name" auto-complete="off" :disabled="operation?false:true"></el-input>
         </el-form-item>
         <el-form-item label="姓名" prop="nickname">
           <el-input v-model="dataForm.nickname" auto-complete="off"></el-input>
         </el-form-item>
-<!--        <el-form-item label="密码" prop="passwd">-->
-<!--          <el-input v-model="dataForm.passwd" type="password" show-password auto-complete="off" disabled=""></el-input>-->
-<!--        </el-form-item>-->
         <el-form-item label="用户组" prop="deptName">
           <popup-tree-input
             :data="deptData"
@@ -115,6 +109,21 @@
         <el-form-item label="手机" prop="phone">
           <el-input v-model="dataForm.phone" auto-complete="off"></el-input>
         </el-form-item>
+        <el-form-item label="学院" prop="academy">
+          <el-input v-model="dataForm.academy" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="专业" prop="major">
+          <el-input v-model="dataForm.major" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="学号" prop="studentNo">
+          <el-input v-model="dataForm.studentNo" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="性别" prop="gender">
+          <el-radio-group v-model="dataForm.gender">
+            <el-radio label="男"></el-radio>
+            <el-radio label="女"></el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="角色" prop="userRoles">
           <el-select v-model="dataForm.userRoles" multiple placeholder="请选择"
                      style="width: 100%;">
@@ -129,54 +138,13 @@
         <el-button :size="size" type="primary" @click.native="submitForm" :loading="editLoading">{{$t('action.submit')}}</el-button>
       </div>
     </el-dialog>
-    <!--批量新增界面-->
-    <el-dialog title="批量添加" width="60%" :visible.sync="dialogVisibleBatch" :close-on-click-modal="false" append-to-body>
-      <div class="batchAddHeader">
-        <el-upload
-          ref="upload"
-          action="/"
-          :show-file-list="false"
-          :on-change="importExcel1"
-          :auto-upload="false">
-          <kt-button
-            slot="trigger"
-            icon="el-icon-upload"
-            label="批量导入"
-            perms="sys:user:add"
-            type="primary" />
-        </el-upload>
-        <a href="/static/批量导入用户模板.xlsx" download="批量导入用户模板.xlsx">下载模板</a>
-      </div>
-      <div>
-        <el-table
-          ref="tableData"
-          v-loading="loading"
-          element-loading-text="拼命加载中"
-          element-loading-spinner="el-icon-loading"
-          element-loading-background="rgba(0, 0, 0, 0.8)"
-          :data="tableData"
-          tooltip-effect="dark"
-          style="width: 100%"
-          class="loading-area">
-          <el-table-column prop="name" label="账号">
-          </el-table-column>
-          <el-table-column prop="nickname" label="姓名" >
-          </el-table-column>
-          <el-table-column prop="passwd" label="密码" >
-          </el-table-column>
-          <el-table-column prop="deptmentId" label="用户组" >
-          </el-table-column>
-          <el-table-column prop="email" label="邮箱" >
-          </el-table-column>
-          <el-table-column prop="phone" label="手机" >
-          </el-table-column>
-        </el-table>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button :size="size" @click.native="dialogVisibleBatch = false">{{$t('action.cancel')}}</el-button>
-        <el-button :size="size" type="primary" @click.native="BatchAdd" :loading="editLoading">{{$t('action.submit')}}</el-button>
-      </div>
-    </el-dialog>
+    <!--    批量上传 -->
+    <upload-file
+      type-name="Account"
+      :switch-btn="dialogVisibleBatch"
+      @close="dialogVisibleBatch = false"
+      @success="importSuccess"
+    />
   </div>
 </template>
 
@@ -185,6 +153,7 @@
   import KtTable from "@/views/Core/KtTable"
   import KtButton from "@/views/Core/KtButton"
   import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
+  import UploadFile from "./template/upload-file"
   import { format } from "@/utils/datetime"
   import {addBean, queryBean, updateBean,addBatchBean,deleteBean} from "@/http/base";
   export default {
@@ -192,18 +161,17 @@
       PopupTreeInput,
       KtTable,
       KtButton,
-      TableColumnFilterDialog
+      TableColumnFilterDialog,
+      UploadFile
     },
     data() {
       const checkPhone = (rule, value, callback) => {
-        if (value) {
-          const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
-          console.log(reg.test(value));
-          if (reg.test(value)) {
-            callback();
-          } else {
-            return callback(new Error('请输入正确的手机号'));
-          }
+        const reg = /^1[3|4|5|7|8][0-9]\d{8}$/
+        console.log(reg.test(value));
+        if (reg.test(value)) {
+          callback();
+        } else {
+          callback(new Error('请输入正确的手机号'));
         }
       };
       const checkEmail = (rule, value, callback) => {
@@ -213,8 +181,10 @@
           if (reg.test(value)) {
             callback();
           } else {
-            return callback(new Error('请输入正确的邮箱号'));
+            callback(new Error('请输入正确的邮箱号'));
           }
+        } else {
+          callback();
         }
       };
       return {
@@ -268,7 +238,11 @@
           email: '',
           phone: '',
           userRoles: [],
-          userRolesId: ''
+          userRolesId: '',
+          academy: '',
+          major: '',
+          studentNo: '',
+          gender: ''
         },
         deptData: [],
         deptData1: [],
@@ -282,6 +256,11 @@
       }
     },
     methods: {
+      importSuccess() {
+        this.$message.success('导入成功！')
+        this.dialogVisibleBatch = false
+        this.findPage(null)
+      },
       // 获取分页数据
       findPage: function (data) {
         let pageRequest={
@@ -369,7 +348,11 @@
           deptName: '',
           email: '',
           phone: '',
-          userRoles: []
+          userRoles: [],
+          academy: '',
+          major: '',
+          studentNo: '',
+          gender: ''
         }
       },
       // 显示编辑界面
@@ -388,7 +371,7 @@
         this.$router.push({name:'用户中心',params:{id : params.row.id}});
       },
       selectionChange:function(params){
-        this.excelData=params.selections;
+        this.excelData = params.selections;
       },
       // 编辑
       submitForm: function () {
@@ -431,6 +414,9 @@
                 },2000)
               })
             })
+          } else {
+            console.log('验证失败');
+            return false;
           }
         })
       },
@@ -483,16 +469,12 @@
           {prop:"roleNames", label:"角色", minWidth:100},
           {prop:"email", label:"邮箱", minWidth:120},
           {prop:"phone", label:"手机", minWidth:100},
-          // {prop:"createBy", label:"创建人", minWidth:120},
-          // {prop:"createTime", label:"创建时间", minWidth:120, formatter:this.dateFormat}
-          // {prop:"lastUpdateBy", label:"更新人", minWidth:100},
-          // {prop:"lastUpdateTime", label:"更新时间", minWidth:120, formatter:this.dateFormat}
+          {prop:"academy", label:"学院", minWidth:120},
+          {prop:"major", label:"专业", minWidth:120},
+          {prop:"studentNo", label:"学号", minWidth:150},
+          {prop:"gender", label:"性别", minWidth:80}
         ]
         this.filterColumns = JSON.parse(JSON.stringify(this.columns));
-      },
-      //批量添加用户显示界面
-      handleBatchAdd:function(){
-        this.dialogVisibleBatch = true
       },
       //批量导入excle
       importExcel1(file) {

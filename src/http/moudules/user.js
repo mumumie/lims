@@ -13,10 +13,13 @@ export const save = (data) => {
     email:data.email,
     name: data.name,
     nickname: data.nickname,
-    passwd:data.passwd,
     deptmentId:data.deptmentId,
     phone:data.phone,
-    roleIdList: data.roleIdList
+    roleIdList: data.roleIdList,
+    academy: data.academy,
+    major: data.major,
+    studentNo: data.studentNo,
+    gender: data.gender
   };
 
   let doc2 = {

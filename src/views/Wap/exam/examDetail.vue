@@ -100,17 +100,17 @@
         finish: false   // 是否可离开此页面
       }
     },
+    computed: {
+      swiper() {
+        return this.$refs.mySwiper.swiper
+      }
+    },
     watch: {
       questList: {
         handler() {
           this.save()
         },
         deep: true
-      }
-    },
-    computed: {
-      swiper() {
-        return this.$refs.mySwiper.swiper
       }
     },
     created() {

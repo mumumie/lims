@@ -11,6 +11,10 @@
         <p>用户角色：{{userInfo.roleNames}}</p>
         <p>用户邮箱：{{userInfo.email}}</p>
         <p>用户手机：{{userInfo.phone}}</p>
+        <p>用户学院：{{userInfo.academy}}</p>
+        <p>用户专业：{{userInfo.major}}</p>
+        <p>用户学号：{{userInfo.studentNo}}</p>
+        <p>用户性别：{{userInfo.gender}}</p>
       </div>
     </el-card>
 <!--    <el-card class="box-card">-->

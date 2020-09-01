@@ -63,16 +63,17 @@ export default {
         name: "Louis",
         avatar: "",
         role: "超级管理员",
-        registeInfo: "注册时间：2018-12-20 "
+        registeInfo: "注册时间：2018-12-20 ",
+        phone: ''
       },
       langVisible: false
     }
   },
   computed:{
     ...mapState({
-      themeColor: state=>state.app.themeColor,
-      collapse: state=>state.app.collapse,
-      User: state=>state.user.user,
+      themeColor: state => state.app.themeColor,
+      collapse: state => state.app.collapse,
+      User: state => state.user.user,
     }),
     navMainTree: {
       get () { return this.$store.state.menu.navMainTree },
@@ -87,25 +88,6 @@ export default {
       set (val) { this.$store.commit('setActiveIndex', val) }
     },
   },
-  // watch:{
-  //   navMainTree(){
-  //     let that = this;
-  //     this.$nextTick(() =>{
-  //       if(that.navMainTree.length > 0){
-  //         if(that.$route.path.split('/')[1] === 'teach'){
-  //           that.activeIndex = 0;
-  //           that.navTree = that.navMainTree[0].children
-  //         }else if(that.$route.path.split('/')[1] === 'sys'){
-  //           that.activeIndex = 1;
-  //           that.navTree = that.navMainTree[1].children
-  //         }else{
-  //           that.activeIndex = 0;
-  //           that.navTree = that.navMainTree[0].children
-  //         }
-  //       }
-  //     })
-  //   }
-  // },
   methods: {
     openWindow(url) {
       window.open(url)
@@ -151,6 +133,7 @@ export default {
         this.user.name = res.bean.nickname;
         this.user.avatar = require("@/assets/user.png");
         this.user.role = res.bean.roleNames;
+        this.user.phone = res.bean.phone;
         this.user.registeInfo ='注册时间：' +formatData(Number(res.bean.insertDt));
       })
     }
