@@ -438,8 +438,8 @@
         this.columns = [
           /*{prop:"id", label:"ID", minWidth:50},*/
           {prop:"name", label:"试卷名称", minWidth:120},
-          {prop:"questBank.course.name", label:"课程名称", minWidth:120},
           {prop:"questBank.name", label:"题库名称", minWidth:120},
+          {prop:"type", label:"考试类型", formatter: this.typeFilter },
           {prop:"createAnnual", label:"学年", minWidth:120, formatter: this.annualFilter},
           {prop:"semester", label:"学期", minWidth:120},
           {prop:"date", label:"考试日期", minWidth:120},
@@ -449,6 +449,17 @@
         ];
         // this.filterColumns = JSON.parse(JSON.stringify(this.columns));
         this.filterColumns = this.columns;
+      },
+      // 考试类型格式化
+      typeFilter: function (row, column, cellValue, index){
+        switch (cellValue) {
+          case 1:
+            return '考试'
+          case 2:
+            return '随堂测试'
+          default:
+            return '-'
+        }
       },
       // 时间格式化
       dateFormat: function (row, column, cellValue, index){

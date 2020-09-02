@@ -44,6 +44,7 @@
         :columns="filterColumns"
         :showBtnEdit="false"
         :showBtnDetail="true"
+        :showBtnBack="true"
         :showCustom="true"
         :showBtnApprove="true"
         customLabel="统计"
@@ -51,6 +52,7 @@
         @handleApprove="handleApprove"
         @findPage="findPage"
         @handleDetail="handleDetail"
+        @handleBack="handleBack"
         @handleEdit="handleEdit"
         @handleBatchDelete="handleBatchDelete"
         @handleDelete="handleDelete">
@@ -258,7 +260,7 @@
   import KtTable from "@/views/Core/PaperTable"
   import KtButton from "@/views/Core/KtButton"
   import ExamResult from "./ExamResult"
-  import { format } from "@/utils/datetime"
+  import { format, formatDate_fmt } from "@/utils/datetime"
   import { baseUrl } from "@/utils/global"
   import { addBean, queryBean, updateBean, findMyExamPaper, aggregate } from "@/http/base";
   import mEcharts from '@/components/Echarts/EchartsPie'
@@ -509,6 +511,23 @@
       questBankChangeHandle:function(val){
         let questBankData = this.questBankData[this.questBankData.findIndex(item => item.id === val)]
       },
+      handleBack(params) {
+        this.$confirm('确定要提前收卷？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const date = formatDate_fmt(new Date(), 'HH:mm')
+          updateBean('Paper', params.row.id, { endTime: date}).then(res => {
+            if (res.retCode === 0) {
+              this.$message.success('已收卷')
+              this.findPage(null)
+            }
+          })
+        }).catch(() =>{
+
+        })
+      },
       handleCustom:function(params){
         //let paperId = params.row.id;
         let paperId = params.row.id;
@@ -679,6 +698,7 @@
           /*{prop:"id", label:"ID", minWidth:50},*/
           {prop:"name", label:"试卷名称"},
           {prop:"questBank.name", label:"题库名称"},
+          {prop:"type", label:"考试类型", formatter: this.typeFilter },
           {prop:"date", label:"考试日期"},
           {prop:"startTime", label:"开始"},
           {prop:"endTime", label:"结束"},
@@ -686,12 +706,23 @@
           {prop:"questBank.course.name", label:"课程名称"},
           {prop:"createAnnual", label:"学年", formatter: this.annualFilter},
           {prop:"semester", label:"学期"},
-          {prop:"waitForReview", label:"待批阅"},
+          // {prop:"waitForReview", label:"待批阅"},
           // {prop:"deptmentIds", label:"用户组范围"},
 
         ];
         // this.filterColumns = JSON.parse(JSON.stringify(this.columns));
         this.filterColumns = this.columns;
+      },
+      // 考试类型格式化
+      typeFilter: function (row, column, cellValue, index){
+        switch (cellValue) {
+          case 1:
+            return '考试'
+          case 2:
+            return '随堂测试'
+          default:
+            return '-'
+        }
       },
       // 时间格式化
       dateFormat: function (row, column, cellValue, index){

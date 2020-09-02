@@ -40,6 +40,7 @@
           </el-form-item>
           <el-form-item>
             <kt-button icon="fa fa-search" :label="$t('action.search')" perms="" type="primary" @click="searchBtn"/>
+            <kt-button label="批量添加" perms="" type="danger" @click="dialogVisibleBatch = true"/>
           </el-form-item>
         </el-form>
       </div>
@@ -106,6 +107,13 @@
           <el-button :size="size" @click.native="detailVisible = false">{{$t('action.cancel')}}</el-button>
         </div>
       </el-dialog>
+      <!--    批量上传 -->
+      <upload-file
+        type-name="Quest"
+        :switch-btn="dialogVisibleBatch"
+        @close="dialogVisibleBatch = false"
+        @success="importSuccess"
+      />
     </div>
     <div  v-if="isEdit">
       <div>
@@ -122,6 +130,7 @@
   import KtButton from "@/views/Core/KtButton"
   import EditQuest from "@/views/Tq/EditQuest"
   import TableColumnFilterDialog from "@/views/Core/TableColumnFilterDialog"
+  import UploadFile from "@/views/Sys/template/upload-file"
   import { format } from "@/utils/datetime"
   import {getBean, queryBean, updateBean,updateBatchBean,findMyExamPaper} from "@/http/base";
   export default {
@@ -131,7 +140,8 @@
       KtTable,
       KtButton,
       TableColumnFilterDialog,
-      EditQuest
+      EditQuest,
+      UploadFile
     },
     data() {
       return {
@@ -185,7 +195,19 @@
         }
       }
     },
+    created() {
+
+    },
+    mounted() {
+      this.findQuestBank(-1);
+      this.initColumns();
+    },
     methods: {
+      importSuccess() {
+        this.$message.success('导入成功！')
+        this.dialogVisibleBatch = false
+        this.findPage(null)
+      },
       // 获取分页数据
       findPage: function (data) {
         let pageRequest={
@@ -547,13 +569,6 @@
         }
 
       }
-    },
-    created() {
-
-    },
-    mounted() {
-      this.findQuestBank(-1);
-      this.initColumns();
     }
   }
 </script>

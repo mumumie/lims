@@ -65,7 +65,7 @@
           </el-table-column>
         </el-table>
       </el-form-item>
-      <el-form-item label="题型">
+      <el-form-item :label="`题型 (总分数：${ totalNum }分)`">
         <el-table
           ref="typeTable"
           :data="questTypeData"
@@ -84,7 +84,7 @@
             label="题目数量">
           </el-table-column>
           <el-table-column
-            prop="zz"
+            prop="typeCount"
             label="随机抽题量">
             <template slot-scope="scope">
               <el-input v-model.number="scope.row.typeCount" @input="limitChange(scope.row, 'typeCount')" type="number" min="1" max="30"></el-input>
@@ -131,7 +131,8 @@
           {name: "较难", value: 4},
           {name: "难", value: 5}
         ],
-        topicValue:''
+        topicValue:'',
+        selectQuest: []
       }
     },
     computed: {
@@ -148,6 +149,12 @@
           baseCondition['insertDt$bt'] = this.timeValue
         }
         return baseCondition
+      },
+      totalNum() {
+        const num = this.selectQuest.reduce((prev, curr) => {
+          return prev + curr.typeCount * curr.score;
+        }, 0)
+        return num
       }
     },
     watch: {
@@ -268,6 +275,7 @@
 
       },
       questTypeChange: function (val) {
+        this.selectQuest = val
         let list = [];
         val.forEach(v => {
           list.push(v.name);

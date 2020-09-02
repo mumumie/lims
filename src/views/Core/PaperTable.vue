@@ -33,6 +33,7 @@
           <kt-button class="btns" label="退回试题" :perms="permsEdit" :size="size" @click="handleExam(scope.$index, scope.row)" v-if="showBtnExam"/>
           <kt-button class="btns" label="还原试题" :perms="permsEdit" :size="size" @click="handlePass(scope.$index, scope.row)" v-if="showBtnPass"/>
           <kt-button  class="btns" :label="customLabel" :perms="permsEdit" :size="size" @click="handleCustom(scope.$index, scope.row)" v-if="showCustom"/>
+          <kt-button class="btns" label="收卷" :perms="permsEdit" :size="size" @click="handleBack(scope.$index, scope.row)" v-if="showBtnBack && scope.row.type === 2 && scope.row.status === 1"/>
         </template>
       </el-table-column>
     </el-table>
@@ -107,6 +108,10 @@ export default {
       default: false
     },
     showBtnPass: {  // 是否显示通过按钮
+      type: Boolean,
+      default: false
+    },
+    showBtnBack: {  // 是否回收试卷按钮
       type: Boolean,
       default: false
     },
@@ -208,6 +213,10 @@ export default {
     // 考试
     handleExam: function (index, row) {
       this.$emit('handleExam', {index:index, row:row})
+    },
+    // 通过
+    handleBack: function (index, row) {
+      this.$emit('handleBack', {index:index, row:row})
     },
     //审批
     handleApprove:function(index, row){

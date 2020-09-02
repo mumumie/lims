@@ -141,7 +141,6 @@
         let arrValues = [];
         for(let key in params){
           const quest = this.questList.filter(v => v.id === key)[0]
-          console.log(quest);
           if (quest.baseType === 1) {
             let score = 0
             if (quest.optionAnswer.toString() === params[key].toString()) {
@@ -198,7 +197,7 @@
           }
         }
         let objScore = 0;
-        console.log(arrValues);
+        // console.log(arrValues);
         arrValues.forEach(item => {
           objScore += item.score
         });
@@ -208,7 +207,7 @@
         };
         updateBean('PaperResult', this.examInfo.paperResult.id, postData).then(res => {
           if(res.retCode === 0){
-            console.log(res)
+            // console.log(res)
           }
         })
       },
