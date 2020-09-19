@@ -113,6 +113,7 @@ export default function $axios(options) {
               }
               break;
             default:
+              if (options.errback!=undefined) options.errback(data);
               vue.$throw(new ErrorResult(data.retMsg))
           }
         }

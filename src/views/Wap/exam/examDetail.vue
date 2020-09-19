@@ -117,7 +117,7 @@
       this.getExamPaper()
     },
     mounted() {
-      this.save = this.debounce(this.saveExamPaper, 10000);
+      this.save = this.debounce(this.saveExamPaper, 1000);
       this.timer = setInterval(() => {
         let date = new Date().getTime()
         let datetime = this.examInfo.validTime[1] - date
@@ -279,6 +279,15 @@
           });
         })
       },
+      fail_back(data){
+        //TODO 判断data.retMsg
+        console.log("请求retCode!=0"+data)
+        this.finish = true
+        this.$toast({
+          message: '考试已结束！'
+        });
+        this.$router.push({path:'/wap/exam'});
+      },
       saveExamPaper(status = 0) {
         let params = {};
         this.questList.forEach((v, i) => {
@@ -286,7 +295,7 @@
             params = this.savePaperResult(v)
           }
         });
-        updateBean('PaperResult', this.examInfo.paperResult.id, Object.assign(params, { status })).then(res => {
+        updateBean('PaperResult', this.examInfo.paperResult.id, Object.assign(params, { status }),this.fail_back).then(res => {
 
         }).catch(err =>{
           console.log(err);
@@ -305,7 +314,7 @@
         });
         const msg = empty.length > 0 ? `${empty.toString()}还未作答，是否确认提交试卷？` : `是否确认提交试卷？`;
         this.$messagebox.confirm(msg).then(action => {
-          updateBean('PaperResult', this.examInfo.paperResult.id, Object.assign(params, {status: 1})).then(res => {
+          updateBean('PaperResult', this.examInfo.paperResult.id, Object.assign(params, {status: 1}),this.fail_back).then(res => {
             this.$toast({
               message: '提交试卷成功！',
               iconClass: 'el-icon-circle-check'

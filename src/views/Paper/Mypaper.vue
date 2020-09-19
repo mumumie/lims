@@ -517,8 +517,10 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          const date = formatDate_fmt(new Date(), 'HH:mm')
-          updateBean('Paper', params.row.id, { endTime: date}).then(res => {
+          const endTime = formatDate_fmt(new Date(), 'HH:mm')
+          let validTime = params.row.validTime;
+          validTime[1] = new Date().getTime();
+          updateBean('Paper', params.row.id, { endTime, validTime}).then(res => {
             if (res.retCode === 0) {
               this.$message.success('已收卷')
               this.findPage(null)

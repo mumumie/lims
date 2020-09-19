@@ -236,8 +236,8 @@
           if (params[key] == null || params[key].length === 0) {
             NotAnswer.push(key);
           }
-          console.log(this.questList);
-          console.log(key);
+          // console.log(this.questList);
+          // console.log(key);
           const quest = this.questList.filter(v => v.id === key)[0]
           // console.log(quest);
           if (quest.baseType === 1) {
@@ -310,7 +310,7 @@
                 paperResultAnswerList: arrValues,
                 objScore: objScore
               };
-              updateBean('PaperResult', this.examInfo.paperResult.id, postData).then(res => {
+              updateBean('PaperResult', this.examInfo.paperResult.id, postData, this.fail_back).then(res => {
                 if (res.retCode === 0) {
                   this.finish = false;
                   this.$message({
@@ -326,6 +326,12 @@
             })
           }
         })
+      },
+      fail_back(data) {
+        console.log(data);
+        this.finish = false;
+        this.$message.warning('考试结束！')
+        this.$router.push('/paper/exam')
       },
       leaveForm: async function(){
         await this.saveForm()

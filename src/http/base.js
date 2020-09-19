@@ -147,7 +147,7 @@ export const updateBatchBean1 = (typeName, docs) => {
   })
 }
 
-export const updateBean = (typeName, id, doc) => {
+export const updateBean = (typeName, id, doc, errback) => {
   let postData = {
     id: id,
     typeName: typeName,
@@ -158,7 +158,8 @@ export const updateBean = (typeName, id, doc) => {
     url: '/updateBean',
     method: 'post',
     data: postData,
-    baseUrl: baseUrl
+    baseUrl: baseUrl,
+    errback
   })
 }
 
